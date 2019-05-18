@@ -1,26 +1,36 @@
 //Создание и инициализация окна. Далле все обрашение к игре происходит через переменную game.
-let game = new Phaser.Game(600, 320, Phaser.AUTO, null, {
-        preload: preload,
-        create: create,
-        update: update
+let game = new Phaser.Game(480, 320, Phaser.AUTO, null, {
+    preload: preload,
+    create: create,
+    update: update
 });
 var man;
+var bombs = [];
 
 function preload() {
-    game.stage.backgroundColor = '#1F8B00';
+game.stage.backgroundColor = '#1F8B00';
     game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
+    game.load.spritesheet('bomb', 'imgs/bomb.png', 16, 16, 3);
+    game.load.spritesheet('bum', 'imgs/bum.png', 48, 48, 5);
     game.load.spritesheet('block1','imgs/block1.png', 16,16, 1);
     game.load.spritesheet('block2','imgs/block2.png', 16,16, 1);
 }
 
- function create () {
+function create() {
     platform2();
     platform();
     man = game.add.sprite(16, 48, 'man');
+
     //Создается игрок, происходить инициализация и привязка всех методов.
     buildMan(man);
-
+    man.blowUp = blowUp;
+    man.dropBomb = dropBomb;
 }
+
+function update() {
+    man.update();
+}
+
 function platform2(){
     game.add.sprite(16,32,'block2');
     let i=80,x,y;
@@ -56,31 +66,28 @@ function platform(){
         }
     } 
 }
-function update() {
-    man.update();
-}
 
 /**
- * @function buildMan Конструктор игрока
- * @param {*} _man 
- */
+* @function buildMan Конструктор игрока
+* @param {*} _man 
+*/
 function buildMan(_man) {
     //Создается свойство speed. Максимальное значение 3, минимальное 0.5.
     Object.defineProperty(_man, "speed", { 
         set: function (val) {
             this._speed = val; 
-            if(val < 0.5) this._speed = 0.5;
-            if(val > 3) this._speed = 3;
+            if (val < 0.5) this._speed = 0.5;
+            if (val > 3) this._speed = 3;
         },
-        get: function(){ return this._speed || (this._speed = 0.5) }
+        get: function() { return this._speed || (this._speed = 0.5) }
     });
     //Создается свойство lifes. Минимальное 0, по умолчанию 3.
     Object.defineProperty(_man, "lifes", { 
         set: function (val) {
             this._life = val; 
-            if(val < 0) this._life = 0;
+            if (val < 0) this._life = 0;
         },
-        get: function(){ return this._life == undefined ? (this._life = 3): this._life }
+        get: function() { return this._life == undefined ? (this._life = 3): this._life }
     });
     //Анимация которая будут рисоваться при каждом действии.
     _man.animations.add("manWalkLeft", [0, 1, 2]);
@@ -117,41 +124,49 @@ function buildMan(_man) {
     let rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
     let upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
     let downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
-    let keyC = game.input.keyboard.addKey(Phaser.Keyboard.C);
-    let keyX = game.input.keyboard.addKey(Phaser.Keyboard.X);
-    _man.update = function() {
-        if(_man.skills.die) {
-            return;
-        }
-        if(leftKey.isDown) {
-            _man.goLeft();
-        } else if(rightKey.isDown) {
-            _man.goRight();
-        } else if(upKey.isDown) {
-            _man.goUp();
-        } else if(downKey.isDown) {
-            _man.goDown();
-        } else {            
-            _man.stop();            
-        }
-        if(keyC.isDown && _man.dropBomb){
-            _man.dropBomb({
+
+    game.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(() => {
+        if (_man.dropBomb && bombs.length < _man.skills.bombsStock) {
+            _man.dropBomb( {
                 x: _man.x,
                 y: _man.y
             });
         }
-        if(keyX.isDown && _man.skills.isSapper && _man.blowUp){
+    }, this);
+
+    game.input.keyboard.addKey(Phaser.Keyboard.X).onDown.add(() => {
+        if (_man.skills.isSapper && _man.blowUp) {
             _man.blowUp();
         }
+    });
+
+    _man.update = function() {
+        if (_man.skills.die) {
+            return;
+        }
+        if (leftKey.isDown) {
+            _man.goLeft();
+        } else if (rightKey.isDown) {
+            _man.goRight();
+        } else if (upKey.isDown) {
+            _man.goUp();
+        } else if (downKey.isDown) {
+            _man.goDown();
+        } else {            
+            _man.stop();            
+        }
     }
+    //callback
+    _man.blowUp = null;
+    _man.dropBomb = null;
     //Умирает
-    _man.Die = function(){
+    _man.Die = function() {
         _man.lifes--;
         _man.animations.play('manDie', 10, false);
         _man.skills.die = true;
     }
     //Оживает
-    _man.comeToLife = function(){
+    _man.comeToLife = function() {
         _man.skills.die = false;
         _man.animations.play('manStop', 10, false);
     }
@@ -174,5 +189,52 @@ function buildMan(_man) {
         deathless: false,
         //Мертв
         die: false
+    }
+}
+
+function buildBomb(bomb) {
+    bomb.animations.add("bombLife", [0, 1, 2]);
+    bomb.animations.play('bombLife', 5, true);
+    bomb.bum = function() {
+        //alert("bum");
+        bomb.animations.play('bombBum', 20, false);
+    }
+}
+
+function blowUp() {
+    if (bombs[0]) {
+        let bum = game.add.sprite(bombs[0].x-16, bombs[0].y-16, 'bum');
+        bum.animations.add("bombBum", [0, 1, 2, 3, 2, 1, 0]);
+        bum.animations.play('bombBum', 10, false);
+        game.world.bringToTop(man);
+
+        bombs[0].bum();
+        bombs.shift().destroy();
+        setInterval((bomb) => {
+                bomb.destroy();
+            },
+            900,
+            bum
+        );
+    }
+}
+
+function dropBomb(pos) {
+    pos.x += 8;
+    pos.y += 8;
+    let posX = pos.x - pos.x % 16;
+    let posY = pos.y - pos.y % 16;
+    let i = 0;
+    for (i = 0;i < bombs.length; i++) {
+        if (bombs[i].x == posX && bombs[i].y == posY) {
+            return;
+        }
+    }
+    let bomb = game.add.sprite(posX, posY, 'bomb');
+    buildBomb(bomb);
+    bombs.push(bomb);
+    game.world.bringToTop(man);
+    if (!man.skills.isSapper) {
+        setTimeout(blowUp, 3000);
     }
 }
