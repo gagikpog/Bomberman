@@ -1,5 +1,5 @@
 //Создание и инициализация окна. Далле все обрашение к игре происходит через переменную game.
-let game = new Phaser.Game(480, 320, Phaser.AUTO, null, {
+let game = new Phaser.Game(600, 320, Phaser.AUTO, null, {
         preload: preload,
         create: create,
         update: update
@@ -9,14 +9,53 @@ var man;
 function preload() {
     game.stage.backgroundColor = '#1F8B00';
     game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
+    game.load.spritesheet('block1','imgs/block1.png', 16,16, 1);
+    game.load.spritesheet('block2','imgs/block2.png', 16,16, 1);
 }
 
-function create() {
-    man = game.add.sprite(14, 16, 'man');
+ function create () {
+    platform2();
+    platform();
+    man = game.add.sprite(16, 48, 'man');
     //Создается игрок, происходить инициализация и привязка всех методов.
     buildMan(man);
-}
 
+}
+function platform2(){
+    game.add.sprite(16,32,'block2');
+    let i=80,x,y;
+    while(--i){
+        y=Math.random()*1000%(16*10)+48;
+        x=Math.random()*1000%464+16;
+        y-=y%16;
+        x-=x%16;
+        if(x<64 && y<80){
+            continue;
+        }
+        game.add.sprite(x,y,'block2');
+    }
+}
+function platform(){
+    let i=0;
+    let k=0;
+    
+    for(i=0; i<31; i++){
+        game.add.sprite(16*i,32,'block1');
+    }
+    for(i=0; i<31; i++){
+        game.add.sprite(16*i,223,'block1');
+    }
+    for(i=0; i<11; i++){
+        game.add.sprite(0,16*i+48,'block1');
+        game.add.sprite(480, 16*i+48,'block1');
+    }
+    for(i=0; i<14; i++){
+        for(k=0; k<5; k++){
+            game.add.sprite(32*i+32,k*32+64,'block1');
+            //game.add.sprite(16*i,k*16+32,'block1');
+        }
+    } 
+}
 function update() {
     man.update();
 }
