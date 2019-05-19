@@ -273,7 +273,7 @@ function buildMob(_mob) {
     _mob.animations.play('mobWalkLeft', 10, false);
     //Движение в каждую сторону и запуск соответствующей анимации.
     _mob.goLeft = function() {
-        _mob.x -= _man.speed;
+        _mob.x -= _mob.speed;
         _mob.animations.play('mobWalkLeft', 10, true);
     }
     _mob.goRight = function() {
@@ -285,7 +285,7 @@ function buildMob(_mob) {
         _mob.animations.play('mobWalkDown', 10, true);
     }
     _mob.goUp = function() {
-        _mob.y -= _man.speed;
+        _mob.y -= _mob.speed;
         _mob.animations.play('mobWalkUp', 10, true);
     }
 
