@@ -14,7 +14,6 @@ var wallsBrocken;
 function preload() {
 game.stage.backgroundColor = '#1F8B00';
     game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
-    //game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
     game.load.spritesheet('mob1', 'imgs/mob1.png', 16, 16, 11);
     game.load.spritesheet('bomb', 'imgs/bomb.png', 16, 16, 3);
     game.load.spritesheet('bum', 'imgs/bum.png', 48, 48, 5);
@@ -131,7 +130,6 @@ function buildMan(_man) {
 
     //Загрузка изначальной кортики.
     _man.animations.play('manStop', 10, false);
-    let accuracy = 16;
     //Движение в каждую сторону и запуск соответствующей анимации.
     _man.goLeft = function() {
         _man.body.velocity.setTo(-60, 0);
@@ -214,12 +212,12 @@ function buildMan(_man) {
             this._bomb = val < 1 ? 1: val;
         },
         //Умение самому взорвать бомбы по кнопке "X".
-        isSapper: true,
+        isSapper: false,
         //Умение проходить сквозь стену
         isSpook: false,
         //Умение проходить сквозь бомбу
         isBypassBombs: false,
-        //Бессмертие_mob
+        //Бессмертие
         deathless: false,
         //Мертв
         die: false
@@ -242,6 +240,7 @@ function blowUp() {
         bum.animations.play('bombBum', 10, false);
         game.world.bringToTop(man);
         game.world.sendToBack(bum);
+
         bombs[0].bum();
         bombs.shift().destroy();
         setInterval((bomb) => {
@@ -312,20 +311,19 @@ function buildMob(_mob) {
         _mob.y -= _mob.speed;
         _mob.animations.play('mobWalkUp', 10, true);
     }
+
     _mob.update = function() {
-        /*/TODO: придумать условия смены направления движения
-        if () {
+        if (leftKey.isDown) {
             _mob.goLeft();
-        } else if () {
+        } else if (rightKey.isDown) {
             _mob.goRight();
-        } else if () {
-        _mob.goUp();
-        } else if () {
+        } else if (upKey.isDown) {
+            _mob.goUp();
+        } else if (downKey.isDown) {
             _mob.goDown();
-        } else {            
-            _mob.stop();            
-        }/*/
+        }            
     }
+
     //Умирает
     _mob.Die = function() {
         _mob.animations.play('mobDie', 10, false);
