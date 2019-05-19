@@ -16,7 +16,7 @@ game.stage.backgroundColor = '#1F8B00';
     game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
     game.load.spritesheet('mob1', 'imgs/mob1.png', 16, 16, 11);
     game.load.spritesheet('bomb', 'imgs/bomb.png', 16, 16, 3);
-    game.load.spritesheet('bum', 'imgs/bum.png', 48, 48, 5);
+    game.load.spritesheet('bum', 'imgs/bum.png', 48, 48, 4);
     game.load.spritesheet('block1','imgs/block1.png', 16,16, 1);
     game.load.spritesheet('block2','imgs/block2.png', 16,16, 1);
 }
@@ -227,10 +227,6 @@ function buildMan(_man) {
 function buildBomb(bomb) {
     bomb.animations.add("bombLife", [1, 0, 2, 0]);
     bomb.animations.play('bombLife', 5, true);
-    bomb.bum = function() {
-        //alert("bum");
-        bomb.animations.play('bombBum', 5, false);
-    }
 }
 
 function blowUp() {
@@ -241,7 +237,6 @@ function blowUp() {
         game.world.bringToTop(man);
         game.world.sendToBack(bum);
 
-        bombs[0].bum();
         bombs.shift().destroy();
         setInterval((bomb) => {
                 bomb.destroy();
@@ -293,26 +288,25 @@ function buildMob(_mob) {
     _mob.animations.add("mobDie", [7, 8, 9, 10]);
 
     //Загрузка изначальной кортики.
-    _mob.animations.play('mobWalkLeft', 10, true);
+    _mob.animations.play('mobWalkLeft', 8, true);
     //Движение в каждую сторону и запуск соответствующей анимации.
     _mob.goLeft = function() {
         _mob.x -= _mob.speed;
-        _mob.animations.play('mobWalkLeft', 10, true);
+        _mob.animations.play('mobWalkLeft', 8, true);
     }
     _mob.goRight = function() {
         _mob.x +=  _mob.speed;
-        _mob.animations.play('mobWalkRight', 10, true);
+        _mob.animations.play('mobWalkRight', 8, true);
     }
     _mob.goDown = function() {
         _mob.y += _mob.speed;
-        _mob.animations.play('mobWalkDown', 10, true);
     }
     _mob.goUp = function() {
         _mob.y -= _mob.speed;
-        _mob.animations.play('mobWalkUp', 10, true);
     }
 
     _mob.update = function() {
+        /*
         if (leftKey.isDown) {
             _mob.goLeft();
         } else if (rightKey.isDown) {
@@ -321,7 +315,8 @@ function buildMob(_mob) {
             _mob.goUp();
         } else if (downKey.isDown) {
             _mob.goDown();
-        }            
+        }
+        */           
     }
 
     //Умирает
