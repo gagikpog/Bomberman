@@ -6,11 +6,10 @@ let game = new Phaser.Game(480, 320, Phaser.AUTO, null, {
 });
 var man;
 var bombs = [];
-var mob1;
+var mob1 = [];
 
 function preload() {
 game.stage.backgroundColor = '#1F8B00';
-    game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
     game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
     game.load.spritesheet('mob1', 'imgs/mob1.png', 16, 16, 11);
     game.load.spritesheet('bomb', 'imgs/bomb.png', 16, 16, 3);
@@ -23,7 +22,7 @@ function create() {
     platform2();
     platform();
     man = game.add.sprite(16, 48, 'man');
-    mob = game.add.sprite(Math.random()*5, Math.random()*5, 'mob1');
+    mob1 = game.add.sprite(Math.random()*5, Math.random()*5, 'mob1');
     //Создается игрок, происходить инициализация и привязка всех методов.
     buildMan(man);
     while(true)
@@ -289,10 +288,8 @@ function buildMob(_mob) {
         _mob.y -= _man.speed;
         _mob.animations.play('mobWalkUp', 10, true);
     }
-    _mob.update = function() {
-        if (_man.skills.die) {
-            return;
-        }
+
+    
         /*/TODO: придумать условия смены направления движения
         if () {
             _mob.goLeft();
@@ -304,8 +301,9 @@ function buildMob(_mob) {
             _mob.goDown();
         } else {            
             _mob.stop();            
-        }/*/
-    }
+        }
+        /*/
+    
     //Умирает
     _mob.Die = function() {
         _mob.animations.play('mobDie', 10, false);
