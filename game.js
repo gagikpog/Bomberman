@@ -289,21 +289,18 @@ function buildMob(_mob) {
         _mob.animations.play('mobWalkUp', 10, true);
     }
 
-    
-        /*/TODO: придумать условия смены направления движения
-        if () {
+    _mob.update = function() {
+        if (leftKey.isDown) {
             _mob.goLeft();
-        } else if () {
+        } else if (rightKey.isDown) {
             _mob.goRight();
-        } else if () {
-        _mob.goUp();
-        } else if () {
+        } else if (upKey.isDown) {
+            _mob.goUp();
+        } else if (downKey.isDown) {
             _mob.goDown();
-        } else {            
-            _mob.stop();            
-        }
-        /*/
-    
+        }            
+    }
+
     //Умирает
     _mob.Die = function() {
         _mob.animations.play('mobDie', 10, false);
