@@ -6,10 +6,13 @@ let game = new Phaser.Game(480, 320, Phaser.AUTO, null, {
 });
 var man;
 var bombs = [];
+var mob1;
 
 function preload() {
 game.stage.backgroundColor = '#1F8B00';
     game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
+    game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
+    game.load.spritesheet('mob1', 'imgs/mob1.png', 16, 16, 11);
     game.load.spritesheet('bomb', 'imgs/bomb.png', 16, 16, 3);
     game.load.spritesheet('bum', 'imgs/bum.png', 48, 48, 5);
     game.load.spritesheet('block1','imgs/block1.png', 16,16, 1);
@@ -20,15 +23,21 @@ function create() {
     platform2();
     platform();
     man = game.add.sprite(16, 48, 'man');
-
+    mob = game.add.sprite(Math.random()*5, Math.random()*5, 'mob1');
     //Создается игрок, происходить инициализация и привязка всех методов.
     buildMan(man);
+    while(true)
+    {
+        setTimeout(buildMob(mob1), 10000);
+    }
+    
     man.blowUp = blowUp;
     man.dropBomb = dropBomb;
 }
 
 function update() {
     man.update();
+    mob1.update();
 }
 
 function platform2(){
@@ -236,5 +245,69 @@ function dropBomb(pos) {
     game.world.bringToTop(man);
     if (!man.skills.isSapper) {
         setTimeout(blowUp, 3000);
+    }
+}
+
+/**
+* @function buildMob Конструктор бота
+* @param {*} _mob
+*/
+function buildMob(_mob) {
+    //Создается свойство speed. Максимальное значение 3, минимальное 0.5.
+    Object.defineProperty(_mob, "speed", { 
+        set: function (val) {
+            this._speed = val; 
+            if (val < 0.5) this._speed = 0.5;
+            if (val > 3) this._speed = 3;
+        },
+        get: function() { return this._speed || (this._speed = 0.5) }
+    });
+    
+    //Анимация которая будут рисоваться при каждом действии.
+    _mob.animations.add("mobWalkLeft", [0, 1, 2]);
+    _mob.animations.add("mobWalkRight", [3, 4, 5]);  
+    _mob.animations.add("mobWalkDown", [0, 1, 2]);
+    _mob.animations.add("mobWalkUp", [3, 4, 5]);
+    _mob.animations.add("mobDie", [7, 8, 9, 10, 11]);
+
+    //Загрузка изначальной кортики.
+    _mob.animations.play('mobWalkLeft', 10, false);
+    //Движение в каждую сторону и запуск соответствующей анимации.
+    _mob.goLeft = function() {
+        _mob.x -= _man.speed;
+        _mob.animations.play('mobWalkLeft', 10, true);
+    }
+    _mob.goRight = function() {
+        _mob.x +=  _mob.speed;
+        _mob.animations.play('mobWalkRight', 10, true);
+    }
+    _mob.goDown = function() {
+        _mob.y += _mob.speed;
+        _mob.animations.play('mobWalkDown', 10, true);
+    }
+    _mob.goUp = function() {
+        _mob.y -= _man.speed;
+        _mob.animations.play('mobWalkUp', 10, true);
+    }
+    _mob.update = function() {
+        if (_man.skills.die) {
+            return;
+        }
+        /*/TODO: придумать условия смены направления движения
+        if () {
+            _mob.goLeft();
+        } else if () {
+            _mob.goRight();
+        } else if () {
+        _mob.goUp();
+        } else if () {
+            _mob.goDown();
+        } else {            
+            _mob.stop();            
+        }/*/
+    }
+    //Умирает
+    _mob.Die = function() {
+        _mob.animations.play('mobDie', 10, false);
     }
 }
