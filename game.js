@@ -25,13 +25,12 @@ function create() {
     mob1 = game.add.sprite(Math.random()*5, Math.random()*5, 'mob1');
     //Создается игрок, происходить инициализация и привязка всех методов.
     buildMan(man);
+    man.blowUp = blowUp;
+    man.dropBomb = dropBomb;
     while(true)
     {
         setTimeout(buildMob(mob1), 10000);
-    }
-    
-    man.blowUp = blowUp;
-    man.dropBomb = dropBomb;
+    } 
 }
 
 function update() {
@@ -289,7 +288,7 @@ function buildMob(_mob) {
         _mob.animations.play('mobWalkUp', 10, true);
     }
 
-    _mob.update = function() {
+    /*_mob.update = function() {
         if (leftKey.isDown) {
             _mob.goLeft();
         } else if (rightKey.isDown) {
@@ -299,7 +298,7 @@ function buildMob(_mob) {
         } else if (downKey.isDown) {
             _mob.goDown();
         }            
-    }
+    }*/
 
     //Умирает
     _mob.Die = function() {
