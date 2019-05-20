@@ -1,5 +1,5 @@
 //Создание и инициализация окна. Далле все обрашение к игре происходит через переменную game.
-let game = new Phaser.Game(480, 320, Phaser.AUTO, null, {
+let game = new Phaser.Game(580, 320, Phaser.AUTO, null, {
     preload: preload,
     create: create,
     update: update,
@@ -7,6 +7,9 @@ let game = new Phaser.Game(480, 320, Phaser.AUTO, null, {
 });
 var man;
 var bombs = [];
+var bombsGroup;
+var bumGroup;
+var mobGroup;
 var mob1;
 var walls;
 var wallsBrocken;
@@ -37,6 +40,15 @@ function create() {
     wallsBrocken = game.add.group();
     wallsBrocken.enableBody = true;
 
+    bombsGroup = game.add.group();
+    bombsGroup.enableBody = true;
+
+    bumGroup = game.add.group();
+    bumGroup.enableBody = true;
+
+    mobGroup = game.add.group();
+    mobGroup.enableBody = true;
+
     platform2();
     platform();
     man = game.add.sprite(16, 48, 'man');
@@ -48,7 +60,9 @@ function create() {
     mob1 = game.add.sprite(16, 96, 'mob1');
     game.physics.enable(mob1, Phaser.Physics.ARCADE);
     mob1.body.collideWorldBounds = true;
-    
+
+    mob1.body.onCollide = new Phaser.Signal();
+    mob1.body.onCollide.add(mobCollide, this);
 
 
     //Создается игрок, происходить инициализация и привязка всех методов.
@@ -59,11 +73,30 @@ function create() {
     man.dropBomb = dropBomb;
 }
 
+function mobCollide(_mob,spr){
+    _mob.collide();
+    switch(spr.name){
+        case 'bum':
+            _mob.Die();
+            break;
+        case 'man':
+            spr.Die()
+            break;
+    }    
+}
+
 function update() {
-    game.physics.arcade.collide(man,walls);
-    game.physics.arcade.collide(man,wallsBrocken);
+    game.physics.arcade.collide(man, walls);
+    game.physics.arcade.collide(man, wallsBrocken);
+    game.physics.arcade.collide(man, bombsGroup);
+
+    game.physics.arcade.collide(mob1, walls);
+    game.physics.arcade.collide(mob1, wallsBrocken);
+    game.physics.arcade.collide(mob1, man);
+    game.physics.arcade.collide(mob1, bombsGroup);
+    game.physics.arcade.collide(mob1, bumGroup);
     man.update();
-    mob1.update();
+    //mob1.update();
 }
 
 function render() {
@@ -111,6 +144,7 @@ function platform() {
 * @param {*} _man 
 */
 function buildMan(_man) {
+    _man.name = 'man';
     //Создается свойство speed. Максимальное значение 3, минимальное 0.5.
     Object.defineProperty(_man, "speed", { 
         set: function (val) {
@@ -166,7 +200,7 @@ function buildMan(_man) {
     let downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
 
     game.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(() => {
-        if (_man.dropBomb && bombs.length < _man.skills.bombsStock) {
+        if (_man.dropBomb && bombs.length < _man.skills.bombsStock && !_man.skills.die) {
             _man.dropBomb( {
                 x: _man.x,
                 y: _man.y
@@ -175,7 +209,7 @@ function buildMan(_man) {
     }, this);
 
     game.input.keyboard.addKey(Phaser.Keyboard.X).onDown.add(() => {
-        if (_man.skills.isSapper && _man.blowUp) {
+        if (_man.skills.isSapper && _man.blowUp && !_man.skills.die) {
             _man.blowUp();
         }
     });
@@ -202,8 +236,12 @@ function buildMan(_man) {
     //Умирает
     _man.Die = function() {
         _man.lifes--;
+        _man.body.velocity.setTo(0, 0);
         _man.animations.play('manDie', 10, false);
         _man.skills.die = true;
+        setTimeout(() => {
+            _man.destroy();
+        }, 1000);
     }
     //Оживает
     _man.comeToLife = function() {
@@ -233,15 +271,18 @@ function buildMan(_man) {
 }
 
 function buildBomb(bomb) {
+    bomb.name = 'bomb';
     bomb.animations.add("bombLife", [1, 0, 2, 0]);
     bomb.animations.play('bombLife', 5, true);
 }
 
 function blowUp() {
     if (bombs[0]) {
-        let bum = game.add.sprite(bombs[0].x-16, bombs[0].y-16, 'bum');
+        let bum = bumGroup.create(bombs[0].x-16, bombs[0].y-16, 'bum');
         bum.animations.add("bombBum", [0, 1, 2, 3, 2, 1, 0]);
         bum.animations.play('bombBum', 10, false);
+        bum.name = 'bum';
+        bum.body.immovable = true;
         game.world.bringToTop(man);
         game.world.sendToBack(bum);
 
@@ -266,8 +307,9 @@ function dropBomb(pos) {
             return;
         }
     }
-    let bomb = game.add.sprite(posX, posY, 'bomb');
+    let bomb = bombsGroup.create(posX, posY, 'bomb');
     buildBomb(bomb);
+    bomb.body.immovable = true;
     bombs.push(bomb);
     game.world.bringToTop(man);
     if (!man.skills.isSapper) {
@@ -280,53 +322,89 @@ function dropBomb(pos) {
 * @param {*} _mob
 */
 function buildMob(_mob) {
+    _mob.name = 'mob'
+    _mob.die = false;
     //Создается свойство speed. Максимальное значение 3, минимальное 0.5.
     Object.defineProperty(_mob, "speed", { 
         set: function (val) {
             this._speed = val; 
-            if (val < 0.5) this._speed = 0.5;
-            if (val > 3) this._speed = 3;
+            if (val < 40) this._speed = 40;
+            if (val > 70) this._speed = 70;
         },
-        get: function() { return this._speed || (this._speed = 0.5) }
+        get: function() { return this._speed || (this._speed = 40) }
     });
 
     //Анимация которая будут рисоваться при каждом действии.
-    _mob.animations.add("mobWalkLeft", [0, 1, 2]);
-    _mob.animations.add("mobWalkRight", [3, 4, 5]);
+    _mob.animations.add("mobWalkLeft", [3, 4, 5]);
+    _mob.animations.add("mobWalkRight", [0, 1, 2]);
     _mob.animations.add("mobDie", [7, 8, 9, 10]);
 
     //Загрузка изначальной кортики.
     _mob.animations.play('mobWalkLeft', 8, true);
     //Движение в каждую сторону и запуск соответствующей анимации.
     _mob.goLeft = function() {
-        _man.body.velocity.setTo(-60, 0);
+        console.log("goLeft");
+        _mob.body.velocity.setTo(-_mob.speed, 0);
         _mob.animations.play('mobWalkLeft', 8, true);
     }
     _mob.goRight = function() {
-        _man.body.velocity.setTo(60, 0);
+        console.log("goRight");
+        _mob.body.velocity.setTo(_mob.speed, 0);
         _mob.animations.play('mobWalkRight', 8, true);
     }
     _mob.goDown = function() {
-        _man.body.velocity.setTo(0, 60);
+        console.log("goDown");
+        _mob.body.velocity.setTo(0, _mob.speed);
     }
     _mob.goUp = function() {
-        _man.body.velocity.setTo(0, 60);
+        console.log("goUp");
+        _mob.body.velocity.setTo(0, -_mob.speed);
     }
 
     _mob.update = function() {
-        if (mob1.body.collideWorldBounds.RIGHT) {
+        if(_mob.die){
+            return;
+        }
+        let probability = 0.001;        
+        if (Math.random() < probability) {
             _mob.goLeft();
-        } else if (mob1.body.collideWorldBounds.LEFT) {
+        } else if (Math.random() < probability) {
             _mob.goRight();
-        } else if (mob1.body.collideWorldBounds.DOWN) {
+        } else if (Math.random() < probability) {
             _mob.goUp();
-        } else if (mob1.body.collideWorldBounds.UP) {
+        } else if (Math.random() < probability) {
             _mob.goDown();
-        }         
+        } 
+    }
+
+    _mob.collide = function() {
+        if(_mob.die){
+            return;
+        }
+        console.log(_mob.body.touching);
+        if (Math.random() < 0.4) {
+            _mob.goLeft();
+        } else if (Math.random() < 0.4) {
+            _mob.goRight();
+        } else if (Math.random() < 0.4) {
+            _mob.goUp();
+        } else {
+            _mob.goDown();
+        }
     }
 
     //Умирает
     _mob.Die = function() {
+        if (_mob.die) {
+            return;
+        }
+        _mob.die = true;
         _mob.animations.play('mobDie', 10, false);
+        _mob.die = true;
+        _mob.body.velocity.setTo(0, 0);
+        setTimeout(()=>{
+            _mob.destroy();
+        },1000)
     }
+    _mob.goLeft();
 }
