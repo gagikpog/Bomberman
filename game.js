@@ -2,74 +2,98 @@
 let game = new Phaser.Game(480, 320, Phaser.AUTO, null, {
     preload: preload,
     create: create,
-    update: update
+    update: update,
+    render: render
 });
 var man;
 var bombs = [];
-var mob1 = [];
+var mob1;
+var walls;
+var wallsBrocken;
 
 function preload() {
 game.stage.backgroundColor = '#1F8B00';
     game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
     game.load.spritesheet('mob1', 'imgs/mob1.png', 16, 16, 11);
     game.load.spritesheet('bomb', 'imgs/bomb.png', 16, 16, 3);
-    game.load.spritesheet('bum', 'imgs/bum.png', 48, 48, 5);
+    game.load.spritesheet('bum', 'imgs/bum.png', 48, 48, 4);
     game.load.spritesheet('block1','imgs/block1.png', 16,16, 1);
     game.load.spritesheet('block2','imgs/block2.png', 16,16, 1);
 }
 
 function create() {
+    game.physics.startSystem(Phaser.Physics.ARCADE);
+    walls = game.add.group();
+    walls.enableBody = true;
+
+    wallsBrocken = game.add.group();
+    wallsBrocken.enableBody = true;
+
     platform2();
     platform();
     man = game.add.sprite(16, 48, 'man');
-    mob1 = game.add.sprite(Math.random()*5, Math.random()*5, 'mob1');
+    game.physics.enable(man, Phaser.Physics.ARCADE);
+    man.body.collideWorldBounds = true;
+    man.body.setCircle(8);
+    
+
+    mob1 = game.add.sprite(16, 96, 'mob1');
+    game.physics.enable(mob1, Phaser.Physics.ARCADE);
+    mob1.body.collideWorldBounds = true;
+    
+
+
     //Создается игрок, происходить инициализация и привязка всех методов.
     buildMan(man);
+    buildMob(mob1);
+    game.world.bringToTop(walls);
     man.blowUp = blowUp;
     man.dropBomb = dropBomb;
-    while(true)
-    {
-        setTimeout(buildMob(mob1), 10000);
-    } 
 }
 
 function update() {
+    game.physics.arcade.collide(man,walls);
+    game.physics.arcade.collide(man,wallsBrocken);
     man.update();
     mob1.update();
 }
 
-function platform2(){
-    game.add.sprite(16,32,'block2');
-    let i=80,x,y;
-    while(--i){
-        y=Math.random()*1000%(16*10)+48;
-        x=Math.random()*1000%464+16;
-        y-=y%16;
-        x-=x%16;
-        if(x<64 && y<80){
+function render() {
+	//game.debug.bodyInfo(mob1, 16, 24);
+}
+
+function platform2() {
+    // game.add.sprite(16, 32, 'block2');
+    let i = 80, x, y;
+    while (--i) {
+        y = Math.random()*1000%(16*10) + 48;
+        x = Math.random()*1000%464 + 16;
+        y -= y%16;
+        x -= x%16;
+        if(x < 64 && y < 80) {
             continue;
         }
-        game.add.sprite(x,y,'block2');
+        wallsBrocken.create(x, y, 'block2').body.immovable = true;
+
     }
 }
-function platform(){
-    let i=0;
-    let k=0;
+function platform() {
+    let i = 0;
+    let k = 0;
     
-    for(i=0; i<31; i++){
-        game.add.sprite(16*i,32,'block1');
+    for (i = 0; i < 31; i++) {
+        walls.create(16*i, 32, 'block1').body.immovable = true;
     }
-    for(i=0; i<31; i++){
-        game.add.sprite(16*i,223,'block1');
+    for (i = 0; i < 31; i++) {
+        walls.create(16*i, 224, 'block1').body.immovable = true;
     }
-    for(i=0; i<11; i++){
-        game.add.sprite(0,16*i+48,'block1');
-        game.add.sprite(480, 16*i+48,'block1');
+    for (i = 0; i < 11; i++) {
+        walls.create(0, 16*i + 48, 'block1').body.immovable = true;
+        walls.create(480, 16*i + 48, 'block1').body.immovable = true;
     }
-    for(i=0; i<14; i++){
-        for(k=0; k<5; k++){
-            game.add.sprite(32*i+32,k*32+64,'block1');
-            //game.add.sprite(16*i,k*16+32,'block1');
+    for (i = 0; i < 14; i++) {
+        for (k = 0; k < 5; k++) {
+            walls.create(32*i + 32, k*32 + 64, 'block1').body.immovable = true;
         }
     } 
 }
@@ -102,28 +126,29 @@ function buildMan(_man) {
     _man.animations.add("manWalkDown", [3, 4, 5]);
     _man.animations.add("manWalkUp", [10, 11, 12]);
     _man.animations.add("manStop", [4]);
-    _man.animations.add("manDie", [14, 15, 16, 17, 18, 19, 20]);
+    _man.animations.add("manDie", [14, 15, 16, 17, 18, 19, 20, 6]);
 
     //Загрузка изначальной кортики.
     _man.animations.play('manStop', 10, false);
     //Движение в каждую сторону и запуск соответствующей анимации.
     _man.goLeft = function() {
-        _man.x -= _man.speed;
+        _man.body.velocity.setTo(-60, 0);
         _man.animations.play('manWalkLeft', 10, true);
     }
     _man.goRight = function() {
-        _man.x += _man.speed;
+        _man.body.velocity.setTo(60, 0);
         _man.animations.play('manWalkRight', 10, true);
     }
     _man.goDown = function() {
-        _man.y += _man.speed;
+        _man.body.velocity.setTo(0, 60);
         _man.animations.play('manWalkDown', 10, true);
     }
     _man.goUp = function() {
-        _man.y -= _man.speed;
+        _man.body.velocity.setTo(0, -60);
         _man.animations.play('manWalkUp', 10, true);
     }
     _man.stop = function() {
+        _man.body.velocity.setTo(0, 0);
         _man.animations.play('manStop', 10, false);
     }
     //Подписка на события мыши.
@@ -200,12 +225,8 @@ function buildMan(_man) {
 }
 
 function buildBomb(bomb) {
-    bomb.animations.add("bombLife", [0, 1, 2]);
+    bomb.animations.add("bombLife", [1, 0, 2, 0]);
     bomb.animations.play('bombLife', 5, true);
-    bomb.bum = function() {
-        //alert("bum");
-        bomb.animations.play('bombBum', 20, false);
-    }
 }
 
 function blowUp() {
@@ -214,13 +235,13 @@ function blowUp() {
         bum.animations.add("bombBum", [0, 1, 2, 3, 2, 1, 0]);
         bum.animations.play('bombBum', 10, false);
         game.world.bringToTop(man);
+        game.world.sendToBack(bum);
 
-        bombs[0].bum();
         bombs.shift().destroy();
         setInterval((bomb) => {
                 bomb.destroy();
             },
-            900,
+            700,
             bum
         );
     }
@@ -260,35 +281,31 @@ function buildMob(_mob) {
         },
         get: function() { return this._speed || (this._speed = 0.5) }
     });
-    
+
     //Анимация которая будут рисоваться при каждом действии.
     _mob.animations.add("mobWalkLeft", [0, 1, 2]);
-    _mob.animations.add("mobWalkRight", [3, 4, 5]);  
-    _mob.animations.add("mobWalkDown", [0, 1, 2]);
-    _mob.animations.add("mobWalkUp", [3, 4, 5]);
-    _mob.animations.add("mobDie", [7, 8, 9, 10, 11]);
+    _mob.animations.add("mobWalkRight", [3, 4, 5]);
+    _mob.animations.add("mobDie", [7, 8, 9, 10]);
 
     //Загрузка изначальной кортики.
-    _mob.animations.play('mobWalkLeft', 10, false);
+    _mob.animations.play('mobWalkLeft', 8, true);
     //Движение в каждую сторону и запуск соответствующей анимации.
     _mob.goLeft = function() {
-        _mob.x -= _mob.speed;
-        _mob.animations.play('mobWalkLeft', 10, true);
+        _man.body.velocity.setTo(-60, 0);
+        _mob.animations.play('mobWalkLeft', 8, true);
     }
     _mob.goRight = function() {
-        _mob.x +=  _mob.speed;
-        _mob.animations.play('mobWalkRight', 10, true);
+        _man.body.velocity.setTo(60, 0);
+        _mob.animations.play('mobWalkRight', 8, true);
     }
     _mob.goDown = function() {
-        _mob.y += _mob.speed;
-        _mob.animations.play('mobWalkDown', 10, true);
+        _man.body.velocity.setTo(0, 60);
     }
     _mob.goUp = function() {
-        _mob.y -= _mob.speed;
-        _mob.animations.play('mobWalkUp', 10, true);
+        _man.body.velocity.setTo(0, 60);
     }
 
-    /*_mob.update = function() {
+    _mob.update = function() {
         if (leftKey.isDown) {
             _mob.goLeft();
         } else if (rightKey.isDown) {
@@ -297,8 +314,8 @@ function buildMob(_mob) {
             _mob.goUp();
         } else if (downKey.isDown) {
             _mob.goDown();
-        }            
-    }*/
+        }         
+    }
 
     //Умирает
     _mob.Die = function() {
