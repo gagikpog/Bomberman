@@ -12,7 +12,15 @@ var walls;
 var wallsBrocken;
 
 function preload() {
-game.stage.backgroundColor = '#1F8B00';
+    game.stage.backgroundColor = '#1F8B00';
+    if(navigator.userAgent.toLowerCase().indexOf('firefox') == -1){
+        // Do Firefox-related activities
+        game.load.baseURL = 'https://raw.githubusercontent.com/gagikpog/Bomberman/master/';
+        game.load.crossOrigin = 'anonymous';
+    }
+    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+    game.scale.pageAlignHorizontally = true;
+    game.scale.pageAlignVertically = true;
     game.load.spritesheet('man', 'imgs/man.png', 16, 16, 21);
     game.load.spritesheet('mob1', 'imgs/mob1.png', 16, 16, 11);
     game.load.spritesheet('bomb', 'imgs/bomb.png', 16, 16, 3);
