@@ -314,13 +314,13 @@ function buildMob(_mob) {
     }
 
     _mob.update = function() {
-        if (leftKey.isDown) {
+        if (mob1.body.collideWorldBounds.RIGHT) {
             _mob.goLeft();
-        } else if (rightKey.isDown) {
+        } else if (mob1.body.collideWorldBounds.LEFT) {
             _mob.goRight();
-        } else if (upKey.isDown) {
+        } else if (mob1.body.collideWorldBounds.DOWN) {
             _mob.goUp();
-        } else if (downKey.isDown) {
+        } else if (mob1.body.collideWorldBounds.UP) {
             _mob.goDown();
         }         
     }
