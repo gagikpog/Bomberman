@@ -7,12 +7,13 @@ let game = new Phaser.Game(580, 320, Phaser.AUTO, null, {
 });
 var man;
 var bombs = [];
-var bombsGroup;
+var bumGroupbombsGroup;
 var bumGroup;
 var mobGroup;
 var mob1;
 var walls;
 var wallsBrocken;
+var mobsCount = 10;
 
 function preload() {
     game.stage.backgroundColor = '#1F8B00';
@@ -28,8 +29,11 @@ function preload() {
     game.load.spritesheet('mob1', 'imgs/mob1.png', 16, 16, 11);
     game.load.spritesheet('bomb', 'imgs/bomb.png', 16, 16, 3);
     game.load.spritesheet('bum', 'imgs/bum.png', 48, 48, 4);
+    game.load.spritesheet('bum1', 'imgs/b1.png', 36, 12, 1);
+    game.load.spritesheet('bum2', 'imgs/b2.png', 12, 36, 1);
     game.load.spritesheet('block1','imgs/block1.png', 16,16, 1);
     game.load.spritesheet('block2','imgs/block2.png', 16,16, 1);
+    game.load.spritesheet('block3','imgs/block3.png', 112, 16, 7);
 }
 
 function create() {
@@ -55,48 +59,47 @@ function create() {
     game.physics.enable(man, Phaser.Physics.ARCADE);
     man.body.collideWorldBounds = true;
     man.body.setCircle(8);
-    
-
-    mob1 = game.add.sprite(16, 96, 'mob1');
-    game.physics.enable(mob1, Phaser.Physics.ARCADE);
-    mob1.body.collideWorldBounds = true;
-
-    mob1.body.onCollide = new Phaser.Signal();
-    mob1.body.onCollide.add(mobCollide, this);
-
+    man.body.onCollide = new Phaser.Signal();
+    man.body.onCollide.add(manCollide, this);
 
     //Создается игрок, происходить инициализация и привязка всех методов.
     buildMan(man);
-    buildMob(mob1);
     game.world.bringToTop(walls);
     man.blowUp = blowUp;
     man.dropBomb = dropBomb;
 }
 
-function mobCollide(_mob,spr){
+function mobCollide(_mob, spr) {
     _mob.collide();
-    switch(spr.name){
-        case 'bum':
+    switch(spr.name) {
+        case 'bum0':
             _mob.Die();
             break;
         case 'man':
-            spr.Die()
+            spr.Die();
             break;
-    }    
+    }
+}
+function manCollide(_man, spr) {
+    switch(spr.name) {
+        case 'bum0': _man.Die();
+    }
 }
 
 function update() {
     game.physics.arcade.collide(man, walls);
     game.physics.arcade.collide(man, wallsBrocken);
     game.physics.arcade.collide(man, bombsGroup);
+    game.physics.arcade.collide(man, bumGroup);
 
-    game.physics.arcade.collide(mob1, walls);
-    game.physics.arcade.collide(mob1, wallsBrocken);
-    game.physics.arcade.collide(mob1, man);
-    game.physics.arcade.collide(mob1, bombsGroup);
-    game.physics.arcade.collide(mob1, bumGroup);
+    game.physics.arcade.collide(mobGroup, walls);
+    game.physics.arcade.collide(mobGroup, wallsBrocken);
+    game.physics.arcade.collide(mobGroup, man);
+    game.physics.arcade.collide(mobGroup, bombsGroup);
+    game.physics.arcade.collide(mobGroup, bumGroup);
+
+    game.physics.arcade.collide(bumGroup, wallsBrocken);
     man.update();
-    //mob1.update();
 }
 
 function render() {
@@ -104,20 +107,26 @@ function render() {
 }
 
 function platform2() {
-    // game.add.sprite(16, 32, 'block2');
-    let i = 80, x, y;
-    while (--i) {
-        y = Math.random()*1000%(16*10) + 48;
-        x = Math.random()*1000%464 + 16;
-        y -= y%16;
-        x -= x%16;
-        if(x < 64 && y < 80) {
-            continue;
-        }
-        wallsBrocken.create(x, y, 'block2').body.immovable = true;
+    let _mobsCount = mobsCount;
+    let i, j, b = 0;
 
+    for (j = 0; j< 11; j++) {
+        for (i = 0; i < 29; i++) {
+            if (i%2 && j%2 || i<2 && j<2) {
+                continue;
+            }
+            b = Math.random();
+            if (b < 0.3) {
+                buildBlock(wallsBrocken.create(i*16 + 16, j*16 + 48, 'block2'));
+            } else {
+                if (b > 0.92 && _mobsCount-->0) {
+                    buildMob(mobGroup.create(i*16 + 16, j*16 + 48, 'mob1'));
+                }
+            }
+        }
     }
 }
+
 function platform() {
     let i = 0;
     let k = 0;
@@ -278,17 +287,25 @@ function buildBomb(bomb) {
 
 function blowUp() {
     if (bombs[0]) {
-        let bum = bumGroup.create(bombs[0].x-16, bombs[0].y-16, 'bum');
+        let bum = game.add.sprite(bombs[0].x - 16, bombs[0].y - 16, 'bum'); 
+        let bum1 = bumGroup.create(bombs[0].x - 10, bombs[0].y + 2, 'bum1'); 
+        let bum2 = bumGroup.create(bombs[0].x + 2, bombs[0].y - 10, 'bum2');
+
         bum.animations.add("bombBum", [0, 1, 2, 3, 2, 1, 0]);
         bum.animations.play('bombBum', 10, false);
         bum.name = 'bum';
-        bum.body.immovable = true;
+        bum1.name = 'bum0';
+        bum2.name = 'bum0';
+        bum1.body.immovable = true;
+        bum2.body.immovable = true;
         game.world.bringToTop(man);
         game.world.sendToBack(bum);
 
         bombs.shift().destroy();
-        setInterval((bomb) => {
-                bomb.destroy();
+        setInterval((_bum) => {
+                _bum.destroy();
+                bum1.destroy();
+                bum2.destroy();
             },
             700,
             bum
@@ -317,11 +334,36 @@ function dropBomb(pos) {
     }
 }
 
+function buildBlock(_block) {
+    _block.name = 'block2';
+    _block.body.immovable = true;
+    _block.body.onCollide = new Phaser.Signal();
+    _block.body.onCollide.add((_b, spr)=> {
+        if (spr.name == 'bum0') {
+            _b.break();
+        }
+    }, this);
+
+
+    _block.break = function () {
+        // let _b = game.add.sprite(_block.x, _block.y, 'block3');
+        // game.physics.enable(_b, Phaser.Physics.ARCADE);
+        // _b.body.collideWorldBounds = true;
+
+        // _b.body.immovable = true;
+        //_b.animations.add('break', [1, 2, 3, 4, 5, 6]);
+        //_b.animations.play('break', 10, false);
+        _block.destroy();
+    }
+}
+
 /**
 * @function buildMob Конструктор бота
 * @param {*} _mob
 */
 function buildMob(_mob) {
+    _mob.body.onCollide = new Phaser.Signal();
+    _mob.body.onCollide.add(mobCollide, this);
     _mob.name = 'mob'
     _mob.die = false;
     //Создается свойство speed. Максимальное значение 3, минимальное 0.5.
@@ -343,21 +385,18 @@ function buildMob(_mob) {
     _mob.animations.play('mobWalkLeft', 8, true);
     //Движение в каждую сторону и запуск соответствующей анимации.
     _mob.goLeft = function() {
-        console.log("goLeft");
+        //.log("goLeft");
         _mob.body.velocity.setTo(-_mob.speed, 0);
         _mob.animations.play('mobWalkLeft', 8, true);
     }
     _mob.goRight = function() {
-        console.log("goRight");
         _mob.body.velocity.setTo(_mob.speed, 0);
         _mob.animations.play('mobWalkRight', 8, true);
     }
     _mob.goDown = function() {
-        console.log("goDown");
         _mob.body.velocity.setTo(0, _mob.speed);
     }
     _mob.goUp = function() {
-        console.log("goUp");
         _mob.body.velocity.setTo(0, -_mob.speed);
     }
 
@@ -381,7 +420,7 @@ function buildMob(_mob) {
         if(_mob.die){
             return;
         }
-        console.log(_mob.body.touching);
+        //console.log(_mob.body.touching);
         if (Math.random() < 0.4) {
             _mob.goLeft();
         } else if (Math.random() < 0.4) {
