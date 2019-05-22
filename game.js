@@ -1,19 +1,28 @@
 //Создание и инициализация окна. Далле все обрашение к игре происходит через переменную game.
-let game = new Phaser.Game(580, 320, Phaser.AUTO, null, {
+let game = new Phaser.Game(496, 240, Phaser.AUTO, null, {
     preload: preload,
     create: create,
     update: update,
     render: render
 });
+
 var man;
+var door;
+var bonus;
 var bombs = [];
+var mobs = [];
+var blocks = [];
 var bumGroupbombsGroup;
 var bumGroup;
 var mobGroup;
-var mob1;
 var walls;
 var wallsBrocken;
+var rect;
 var mobsCount = 10;
+var time = 180;
+var score = 0;
+var isGame = true;
+var statge = 1;
 
 function preload() {
     game.stage.backgroundColor = '#1F8B00';
@@ -33,10 +42,18 @@ function preload() {
     game.load.spritesheet('bum2', 'imgs/b2.png', 12, 36, 1);
     game.load.spritesheet('block1','imgs/block1.png', 16,16, 1);
     game.load.spritesheet('block2','imgs/block2.png', 16,16, 1);
-    game.load.spritesheet('block3','imgs/block3.png', 112, 16, 7);
+    game.load.spritesheet('block3','imgs/block3.png', 16, 16, 7);
+    game.load.spritesheet('bonuses','imgs/bonuses.png', 16, 16, 14);
+    game.load.spritesheet('door','imgs/door.png', 16, 16, 14);
 }
 
 function create() {
+    setInterval(()=> {
+        if (time-- == 0) {
+            man.Die();
+            time = 180;
+        }
+    },1000);
     game.physics.startSystem(Phaser.Physics.ARCADE);
     walls = game.add.group();
     walls.enableBody = true;
@@ -53,20 +70,27 @@ function create() {
     mobGroup = game.add.group();
     mobGroup.enableBody = true;
 
-    platform2();
-    platform();
-    man = game.add.sprite(16, 48, 'man');
-    game.physics.enable(man, Phaser.Physics.ARCADE);
-    man.body.collideWorldBounds = true;
-    man.body.setCircle(8);
-    man.body.onCollide = new Phaser.Signal();
-    man.body.onCollide.add(manCollide, this);
+    game.add.sprite(-100, -5, 'block1').scale.set(45, 2.6);
+    door = game.add.sprite(0, 0, 'door');
+    door.name = 'door';
+    game.physics.enable(door, Phaser.Physics.ARCADE);
+    door.body.setCircle(1);
+    door.body.collideWorldBounds = true;
+    door.body.immovable = true;
+    //game.world.sendToBack(door);
+    
+    bonus = game.add.sprite(0, 0, 'bonuses');
+    bonus.name = 'bonus';
+    game.physics.enable(bonus, Phaser.Physics.ARCADE);
+    bonus.body.collideWorldBounds = true;
+    bonus.body.setCircle(1);
+    //game.world.sendToBack(bonus);
+    bonus.score = 1000;
 
-    //Создается игрок, происходить инициализация и привязка всех методов.
-    buildMan(man);
-    game.world.bringToTop(walls);
-    man.blowUp = blowUp;
-    man.dropBomb = dropBomb;
+    rect = new Phaser.Rectangle( 0, 0, 500, 500 );
+
+    platform();
+    newGame();
 }
 
 function mobCollide(_mob, spr) {
@@ -82,7 +106,26 @@ function mobCollide(_mob, spr) {
 }
 function manCollide(_man, spr) {
     switch(spr.name) {
-        case 'bum0': _man.Die();
+        case 'bum0': 
+            _man.Die();
+            break;
+        case 'bonus':
+            bonus.check = true;
+            bonus.x = -100;
+            score += bonus.score;
+            break;
+        case 'door':
+            if (bonus.check) {
+                let i = 0;
+                for (i = 0; i < mobs.length; i++) {
+                    if (!mobs[i].die) {
+                        return;
+                    }
+                }
+                bonus.check = false;
+                winLevel();
+            }
+            break;
     }
 }
 
@@ -91,6 +134,8 @@ function update() {
     game.physics.arcade.collide(man, wallsBrocken);
     game.physics.arcade.collide(man, bombsGroup);
     game.physics.arcade.collide(man, bumGroup);
+    game.physics.arcade.collide(man, bonus);
+    game.physics.arcade.collide(man, door);
 
     game.physics.arcade.collide(mobGroup, walls);
     game.physics.arcade.collide(mobGroup, wallsBrocken);
@@ -103,13 +148,22 @@ function update() {
 }
 
 function render() {
-	//game.debug.bodyInfo(mob1, 16, 24);
+    if (isGame) {
+        game.debug.text( `TIME  ${time}            ${score}             LEFT  ${man.lifes}`, 60, 20 );
+    } else {
+        game.debug.geom( rect, 'rgba(0,0,0,1)');
+        game.debug.text( `STAGE ${stage}`, 210, 120 );
+    }
 }
 
 function platform2() {
     let _mobsCount = mobsCount;
-    let i, j, b = 0;
-
+    let i, j, b = 0, 
+        firstBonus = true,
+        firstDoor = true,
+        n = 0;
+    let doorPosition = Math.floor(Math.random()*1000)%200;
+    let bonusPosition = Math.floor(Math.random()*1000)%200;
     for (j = 0; j< 11; j++) {
         for (i = 0; i < 29; i++) {
             if (i%2 && j%2 || i<2 && j<2) {
@@ -117,12 +171,24 @@ function platform2() {
             }
             b = Math.random();
             if (b < 0.3) {
-                buildBlock(wallsBrocken.create(i*16 + 16, j*16 + 48, 'block2'));
+                if (n > doorPosition && firstDoor) {
+                    door.x = i*16 + 16;
+                    door.y = j*16 + 48;
+                    firstDoor = false;
+                } else {
+                    if (n > bonusPosition && firstBonus) {                      
+                        bonus.x = i*16 + 16;
+                        bonus.y = j*16 + 48;
+                        firstBonus = false;
+                    }
+                }
+                blocks.push(buildBlock(wallsBrocken.create(i*16 + 16, j*16 + 48, 'block2')));
             } else {
                 if (b > 0.92 && _mobsCount-->0) {
-                    buildMob(mobGroup.create(i*16 + 16, j*16 + 48, 'mob1'));
+                    mobs.push(buildMob(mobGroup.create(i*16 + 16, j*16 + 48, 'mob1')));
                 }
             }
+            n++;
         }
     }
 }
@@ -244,13 +310,21 @@ function buildMan(_man) {
     _man.dropBomb = null;
     //Умирает
     _man.Die = function() {
+        if (_man.skills.die) {
+            return;
+        }
         _man.lifes--;
         _man.body.velocity.setTo(0, 0);
         _man.animations.play('manDie', 10, false);
         _man.skills.die = true;
         setTimeout(() => {
-            _man.destroy();
-        }, 1000);
+            isGame = false;
+            setTimeout(()=>{
+                nextLevel();
+                isGame = true;
+            }, 3000);
+           
+        }, 3000);
     }
     //Оживает
     _man.comeToLife = function() {
@@ -346,15 +420,19 @@ function buildBlock(_block) {
 
 
     _block.break = function () {
-        // let _b = game.add.sprite(_block.x, _block.y, 'block3');
-        // game.physics.enable(_b, Phaser.Physics.ARCADE);
-        // _b.body.collideWorldBounds = true;
+        let _b = game.add.sprite(_block.x, _block.y, 'block3');
+        game.physics.enable(_b, Phaser.Physics.ARCADE);
+        _b.body.collideWorldBounds = true;
 
-        // _b.body.immovable = true;
-        //_b.animations.add('break', [1, 2, 3, 4, 5, 6]);
-        //_b.animations.play('break', 10, false);
+        _b.body.immovable = true;
+        _b.animations.add('break', [1, 2, 3, 4, 5, 6]);
+        _b.animations.play('break', 10, false);
         _block.destroy();
+        setTimeout(()=>{
+            _b.destroy();
+        },500);
     }
+    return _block;
 }
 
 /**
@@ -366,6 +444,7 @@ function buildMob(_mob) {
     _mob.body.onCollide.add(mobCollide, this);
     _mob.name = 'mob'
     _mob.die = false;
+    _mob.score = 100;
     //Создается свойство speed. Максимальное значение 3, минимальное 0.5.
     Object.defineProperty(_mob, "speed", { 
         set: function (val) {
@@ -385,7 +464,6 @@ function buildMob(_mob) {
     _mob.animations.play('mobWalkLeft', 8, true);
     //Движение в каждую сторону и запуск соответствующей анимации.
     _mob.goLeft = function() {
-        //.log("goLeft");
         _mob.body.velocity.setTo(-_mob.speed, 0);
         _mob.animations.play('mobWalkLeft', 8, true);
     }
@@ -441,9 +519,75 @@ function buildMob(_mob) {
         _mob.animations.play('mobDie', 10, false);
         _mob.die = true;
         _mob.body.velocity.setTo(0, 0);
+        score += _mob.score;
         setTimeout(()=>{
             _mob.destroy();
         },1000)
     }
-    _mob.goLeft();
+    _mob.goRight();
+    return _mob;
+
+}
+
+function newGame() {
+    if (man && man.destroy) {
+        man.destroy();
+    }
+    man = game.add.sprite(16, 48, 'man');
+    game.physics.enable(man, Phaser.Physics.ARCADE);
+    man.body.collideWorldBounds = true;
+    man.body.setCircle(8);
+    man.body.onCollide = new Phaser.Signal();
+    man.body.onCollide.add(manCollide, this);
+    
+    //Создается игрок, происходить инициализация и привязка всех методов.
+    buildMan(man);
+    game.world.bringToTop(walls);
+    man.blowUp = blowUp;
+    man.dropBomb = dropBomb;
+    man.lifes = 3;
+    score = 0;
+    stage = 1;
+    nextLevel();
+}
+
+function nextLevel() {
+    if (man.lifes == 0) {
+        alert('Game over');
+        newGame();
+        return;
+    }
+    let i;
+    for (i = 0; i < blocks.length; i++) {
+        if (blocks[i].destroy) {
+            blocks[i].destroy();
+        }
+    }
+    for (i = 0; i < mobs.length; i++) {
+        if (mobs[i].destroy) {
+            mobs[i].destroy();
+        }
+    }
+    for (i = 0; i < bombs.length; i++) {
+        if (bombs[i].destroy) {
+            bombs[i].destroy();
+        }
+    }
+    time = 180;
+    blocks = [];
+    mobs = [];
+    platform2();
+    man.x = 16;
+    man.y = 48;
+    man.comeToLife();
+}
+
+function winLevel() {
+    stage++;
+    man.lifes++;
+    isGame = false;
+    setTimeout(()=> {
+        isGame = true;
+    }, 3000);
+    nextLevel();
 }
