@@ -77,14 +77,14 @@ function create() {
     door.body.setCircle(1);
     door.body.collideWorldBounds = true;
     door.body.immovable = true;
-    //game.world.sendToBack(door);
+    game.world.sendToBack(door);
     
     bonus = game.add.sprite(0, 0, 'bonuses');
     bonus.name = 'bonus';
     game.physics.enable(bonus, Phaser.Physics.ARCADE);
     bonus.body.collideWorldBounds = true;
     bonus.body.setCircle(1);
-    //game.world.sendToBack(bonus);
+    game.world.sendToBack(bonus);
     bonus.score = 1000;
 
     rect = new Phaser.Rectangle( 0, 0, 500, 500 );
