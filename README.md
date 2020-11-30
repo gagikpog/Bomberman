@@ -1,3 +1,3 @@
 # Bomberman
 
-[Demo](http://findpic.online/bomberman)
+[Demo](https://gagikpog.ru/bomberman)
