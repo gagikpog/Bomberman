@@ -1,10 +1,9 @@
 
 /**
 * @function buildMan Конструктор игрока
-* @param {*} target
 */
-function buildMan(target) {
-    const _man = new Man(target);
+function buildMan() {
+    const _man = new Man();
 
     game.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(() => {
         if (bombs.length < _man.skills.bombsStock && !_man.skills.die) {
@@ -75,11 +74,17 @@ class Man {
         }
     }
 
-    constructor(target) {
-        this.target = target;
+    constructor() {
+        this.target = game.add.sprite(16, 48, 'man');
+        game.physics.enable(this.target, Phaser.Physics.ARCADE);
 
-        target.name = 'man';
+        this.target.name = 'man';
         this.name = 'man';
+
+        this.target.body.collideWorldBounds = true;
+        this.target.body.setCircle(8);
+        this.target.body.onCollide = new Phaser.Signal();
+        this.target.body.onCollide.add(this.collideHandler, this);
 
         this._initSprites();
 
@@ -224,5 +229,36 @@ class Man {
                 700
             );
         }
+    }
+
+    collideHandler = (_man, spr) => {
+
+        switch(spr.name) {
+            case 'bum0':
+                man.Die();
+                break;
+            case 'bonus':
+                bonus.check = true;
+                bonus.x = -100;
+                score += bonus.score;
+                break;
+            case 'door':
+                if (bonus.check) {
+                    let i = 0;
+                    for (i = 0; i < mobs.length; i++) {
+                        if (!mobs[i].die) {
+                            return;
+                        }
+                    }
+
+                    bonus.check = false;
+                    winLevel();
+                }
+                break;
+            case 'mob':
+                this.Die();
+                break;
+        }
+    
     }
 }

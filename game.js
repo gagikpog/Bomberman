@@ -22,7 +22,6 @@ var mobsCount = 10;
 var time = 180;
 var score = 0;
 var isGame = true;
-var statge = 1;
 
 function preload() {
     game.stage.backgroundColor = '#1F8B00';
@@ -98,33 +97,6 @@ function mobCollide(_mob, spr) {
     switch(spr.name) {
         case 'bum0':
             _mob.Die();
-            break;
-        case 'man':
-            man.Die();
-            break;
-    }
-}
-function manCollide(_man, spr) {
-    switch(spr.name) {
-        case 'bum0': 
-            man.Die();
-            break;
-        case 'bonus':
-            bonus.check = true;
-            bonus.x = -100;
-            score += bonus.score;
-            break;
-        case 'door':
-            if (bonus.check) {
-                let i = 0;
-                for (i = 0; i < mobs.length; i++) {
-                    if (!mobs[i].die) {
-                        return;
-                    }
-                }
-                bonus.check = false;
-                winLevel();
-            }
             break;
     }
 }
@@ -295,7 +267,7 @@ function buildMob(_mob) {
         if(_mob.die){
             return;
         }
-        let probability = 0.001;        
+        let probability = 0.001;
         if (Math.random() < probability) {
             _mob.goLeft();
         } else if (Math.random() < probability) {
@@ -346,18 +318,11 @@ function newGame() {
     if (man) {
         man.destroy();
     }
-    man = game.add.sprite(16, 48, 'man');
-    game.physics.enable(man, Phaser.Physics.ARCADE);
-    man.body.collideWorldBounds = true;
-    man.body.setCircle(8);
-    man.body.onCollide = new Phaser.Signal();
-    man.body.onCollide.add(manCollide, this);
-    
+
     //Создается игрок, происходить инициализация и привязка всех методов.
-    man = buildMan(man);
+    man = buildMan();
     game.world.bringToTop(walls);
 
-    man.lives = 3;
     score = 0;
     stage = 1;
     nextLevel();
