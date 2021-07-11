@@ -1,4 +1,4 @@
-//Создание и инициализация окна. Далле все обрашение к игре происходит через переменную game.
+//Создание и инициализация окна. Далее все обращение к игре происходит через переменную game.
 let game = new Phaser.Game(496, 240, Phaser.AUTO, null, {
     preload: preload,
     create: create,
@@ -100,14 +100,14 @@ function mobCollide(_mob, spr) {
             _mob.Die();
             break;
         case 'man':
-            spr.Die();
+            man.Die();
             break;
     }
 }
 function manCollide(_man, spr) {
     switch(spr.name) {
         case 'bum0': 
-            _man.Die();
+            man.Die();
             break;
         case 'bonus':
             bonus.check = true;
@@ -130,16 +130,16 @@ function manCollide(_man, spr) {
 }
 
 function update() {
-    game.physics.arcade.collide(man, walls);
-    game.physics.arcade.collide(man, wallsBrocken);
-    game.physics.arcade.collide(man, bombsGroup);
-    game.physics.arcade.collide(man, bumGroup);
-    game.physics.arcade.collide(man, bonus);
-    game.physics.arcade.collide(man, door);
+    game.physics.arcade.collide(man.target, walls);
+    game.physics.arcade.collide(man.target, wallsBrocken);
+    game.physics.arcade.collide(man.target, bombsGroup);
+    game.physics.arcade.collide(man.target, bumGroup);
+    game.physics.arcade.collide(man.target, bonus);
+    game.physics.arcade.collide(man.target, door);
 
     game.physics.arcade.collide(mobGroup, walls);
     game.physics.arcade.collide(mobGroup, wallsBrocken);
-    game.physics.arcade.collide(mobGroup, man);
+    game.physics.arcade.collide(mobGroup, man.target);
     game.physics.arcade.collide(mobGroup, bombsGroup);
     game.physics.arcade.collide(mobGroup, bumGroup);
 
@@ -149,7 +149,7 @@ function update() {
 
 function render() {
     if (isGame) {
-        game.debug.text( `TIME  ${time}            ${score}             LEFT  ${man.lifes}`, 60, 20 );
+        game.debug.text( `TIME  ${time}            ${score}             LEFT  ${man.lives}`, 60, 20 );
     } else {
         game.debug.geom( rect, 'rgba(0,0,0,1)');
         game.debug.text( `STAGE ${stage}`, 210, 120 );
@@ -176,7 +176,7 @@ function platform2() {
                     door.y = j*16 + 48;
                     firstDoor = false;
                 } else {
-                    if (n > bonusPosition && firstBonus) {                      
+                    if (n > bonusPosition && firstBonus) {
                         bonus.x = i*16 + 16;
                         bonus.y = j*16 + 48;
                         firstBonus = false;
@@ -214,199 +214,12 @@ function platform() {
     } 
 }
 
-/**
-* @function buildMan Конструктор игрока
-* @param {*} _man 
-*/
-function buildMan(_man) {
-    _man.name = 'man';
-    //Создается свойство speed. Максимальное значение 3, минимальное 0.5.
-    Object.defineProperty(_man, "speed", { 
-        set: function (val) {
-            this._speed = val; 
-            if (val < 0.5) this._speed = 0.5;
-            if (val > 3) this._speed = 3;
-        },
-        get: function() { return this._speed || (this._speed = 0.5) }
-    });
-    //Создается свойство lifes. Минимальное 0, по умолчанию 3.
-    Object.defineProperty(_man, "lifes", { 
-        set: function (val) {
-            this._life = val; 
-            if (val < 0) this._life = 0;
-        },
-        get: function() { return this._life == undefined ? (this._life = 3): this._life }
-    });
-    //Анимация которая будут рисоваться при каждом действии.
-    _man.animations.add("manWalkLeft", [0, 1, 2]);
-    _man.animations.add("manWalkRight", [7, 8, 9]);
-    _man.animations.add("manWalkDown", [3, 4, 5]);
-    _man.animations.add("manWalkUp", [10, 11, 12]);
-    _man.animations.add("manStop", [4]);
-    _man.animations.add("manDie", [14, 15, 16, 17, 18, 19, 20, 6]);
-
-    //Загрузка изначальной кортики.
-    _man.animations.play('manStop', 10, false);
-    //Движение в каждую сторону и запуск соответствующей анимации.
-    _man.goLeft = function() {
-        _man.body.velocity.setTo(-60, 0);
-        _man.animations.play('manWalkLeft', 10, true);
-    }
-    _man.goRight = function() {
-        _man.body.velocity.setTo(60, 0);
-        _man.animations.play('manWalkRight', 10, true);
-    }
-    _man.goDown = function() {
-        _man.body.velocity.setTo(0, 60);
-        _man.animations.play('manWalkDown', 10, true);
-    }
-    _man.goUp = function() {
-        _man.body.velocity.setTo(0, -60);
-        _man.animations.play('manWalkUp', 10, true);
-    }
-    _man.stop = function() {
-        _man.body.velocity.setTo(0, 0);
-        _man.animations.play('manStop', 10, false);
-    }
-    //Подписка на события мыши.
-    let leftKey = game.input.keyboard.addKey(Phaser.Keyboard.LEFT);
-    let rightKey = game.input.keyboard.addKey(Phaser.Keyboard.RIGHT);
-    let upKey = game.input.keyboard.addKey(Phaser.Keyboard.UP);
-    let downKey = game.input.keyboard.addKey(Phaser.Keyboard.DOWN);
-
-    game.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(() => {
-        if (_man.dropBomb && bombs.length < _man.skills.bombsStock && !_man.skills.die) {
-            _man.dropBomb( {
-                x: _man.x,
-                y: _man.y
-            });
-        }
-    }, this);
-
-    game.input.keyboard.addKey(Phaser.Keyboard.X).onDown.add(() => {
-        if (_man.skills.isSapper && _man.blowUp && !_man.skills.die) {
-            _man.blowUp();
-        }
-    });
-
-    _man.update = function() {
-        if (_man.skills.die) {
-            return;
-        }
-        if (leftKey.isDown) {
-            _man.goLeft();
-        } else if (rightKey.isDown) {
-            _man.goRight();
-        } else if (upKey.isDown) {
-            _man.goUp();
-        } else if (downKey.isDown) {
-            _man.goDown();
-        } else {            
-            _man.stop();            
-        }
-    }
-    //callback
-    _man.blowUp = null;
-    _man.dropBomb = null;
-    //Умирает
-    _man.Die = function() {
-        if (_man.skills.die) {
-            return;
-        }
-        _man.lifes--;
-        _man.body.velocity.setTo(0, 0);
-        _man.animations.play('manDie', 10, false);
-        _man.skills.die = true;
-        setTimeout(() => {
-            isGame = false;
-            setTimeout(()=>{
-                nextLevel();
-                isGame = true;
-            }, 3000);
-           
-        }, 3000);
-    }
-    //Оживает
-    _man.comeToLife = function() {
-        _man.skills.die = false;
-        _man.animations.play('manStop', 10, false);
-    }
-    //Умения
-    _man.skills = {
-        //Кол. бомб который может поставить 
-        get bombsStock() {
-            return this._bomb || ( this._bomb = 1 );
-        },
-        set bombsStock(val = 1) {
-            this._bomb = val < 1 ? 1: val;
-        },
-        //Умение самому взорвать бомбы по кнопке "X".
-        isSapper: false,
-        //Умение проходить сквозь стену
-        isSpook: false,
-        //Умение проходить сквозь бомбу
-        isBypassBombs: false,
-        //Бессмертие
-        deathless: false,
-        //Мертв
-        die: false
-    }
-}
-
 function buildBomb(bomb) {
     bomb.name = 'bomb';
     bomb.animations.add("bombLife", [1, 0, 2, 0]);
     bomb.animations.play('bombLife', 5, true);
 }
 
-function blowUp() {
-    if (bombs[0]) {
-        let bum = game.add.sprite(bombs[0].x - 16, bombs[0].y - 16, 'bum'); 
-        let bum1 = bumGroup.create(bombs[0].x - 10, bombs[0].y + 2, 'bum1'); 
-        let bum2 = bumGroup.create(bombs[0].x + 2, bombs[0].y - 10, 'bum2');
-
-        bum.animations.add("bombBum", [0, 1, 2, 3, 2, 1, 0]);
-        bum.animations.play('bombBum', 10, false);
-        bum.name = 'bum';
-        bum1.name = 'bum0';
-        bum2.name = 'bum0';
-        bum1.body.immovable = true;
-        bum2.body.immovable = true;
-        game.world.bringToTop(man);
-        game.world.sendToBack(bum);
-
-        bombs.shift().destroy();
-        setInterval((_bum) => {
-                _bum.destroy();
-                bum1.destroy();
-                bum2.destroy();
-            },
-            700,
-            bum
-        );
-    }
-}
-
-function dropBomb(pos) {
-    pos.x += 8;
-    pos.y += 8;
-    let posX = pos.x - pos.x % 16;
-    let posY = pos.y - pos.y % 16;
-    let i = 0;
-    for (i = 0;i < bombs.length; i++) {
-        if (bombs[i].x == posX && bombs[i].y == posY) {
-            return;
-        }
-    }
-    let bomb = bombsGroup.create(posX, posY, 'bomb');
-    buildBomb(bomb);
-    bomb.body.immovable = true;
-    bombs.push(bomb);
-    game.world.bringToTop(man);
-    if (!man.skills.isSapper) {
-        setTimeout(blowUp, 3000);
-    }
-}
 
 function buildBlock(_block) {
     _block.name = 'block2';
@@ -530,7 +343,7 @@ function buildMob(_mob) {
 }
 
 function newGame() {
-    if (man && man.destroy) {
+    if (man) {
         man.destroy();
     }
     man = game.add.sprite(16, 48, 'man');
@@ -541,18 +354,17 @@ function newGame() {
     man.body.onCollide.add(manCollide, this);
     
     //Создается игрок, происходить инициализация и привязка всех методов.
-    buildMan(man);
+    man = buildMan(man);
     game.world.bringToTop(walls);
-    man.blowUp = blowUp;
-    man.dropBomb = dropBomb;
-    man.lifes = 3;
+
+    man.lives = 3;
     score = 0;
     stage = 1;
     nextLevel();
 }
 
 function nextLevel() {
-    if (man.lifes == 0) {
+    if (man.lives == 0) {
         alert('Game over');
         newGame();
         return;
@@ -577,14 +389,14 @@ function nextLevel() {
     blocks = [];
     mobs = [];
     platform2();
-    man.x = 16;
-    man.y = 48;
+    man.target.x = 16;
+    man.target.y = 48;
     man.comeToLife();
 }
 
 function winLevel() {
     stage++;
-    man.lifes++;
+    man.lives++;
     isGame = false;
     setTimeout(()=> {
         isGame = true;
