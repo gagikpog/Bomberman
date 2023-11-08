@@ -2,7 +2,7 @@
 /**
 * @function buildMan Конструктор игрока
 */
-function buildMan() {
+window.buildMan = function() {
     const _man = new Man();
 
     myGame.engine.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(() => {

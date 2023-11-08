@@ -1,6 +1,8 @@
-"use strict";
+import { Game } from './game';
+import { Man } from './man';
+
 //Создание и инициализация окна. Далее все обращение к игре происходит через переменную game.
-const myGame = new Game();
+window.myGame = new Game();
 
 function mobCollide(_mob, spr) {
     _mob.collide();
@@ -49,7 +51,7 @@ function platform2() {
     }
 }
 
-function buildBomb(bomb) {
+window.buildBomb = function(bomb) {
     bomb.name = 'bomb';
     bomb.animations.add("bombLife", [1, 0, 2, 0]);
     bomb.animations.play('bombLife', 5, true);
@@ -176,7 +178,7 @@ function buildMob(_mob) {
 
 }
 
-function newGame() {
+window.newGame = function() {
     if (myGame.player) {
         myGame.player.destroy();
     }
@@ -190,7 +192,7 @@ function newGame() {
     nextLevel();
 }
 
-function nextLevel() {
+window.nextLevel = function() {
     if (myGame.player.lives == 0) {
         alert('Game over');
         newGame();

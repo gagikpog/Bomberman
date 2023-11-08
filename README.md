@@ -1,3 +1,16 @@
-# Bomberman
+# Bomberman game
 
-[Demo](https://gagikpog.ru/bomberman)
+## Init project
+```bash
+npm install
+```
+
+## Run development server
+```bash
+npm run dev
+```
+
+## Build project
+```bash
+npm run build
+```

@@ -1,5 +1,4 @@
-
-function initWalls(walls) {
+export function initWalls(walls) {
     const width = 31;
     const height = 13;
     const blockSize = 16;
