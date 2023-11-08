@@ -1,3 +1,4 @@
+import Phaser from 'phaser-ce';
 import { Man } from './man';
 
 export function initWalls(walls) {

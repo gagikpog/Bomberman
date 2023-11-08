@@ -1,3 +1,4 @@
+import Phaser from 'phaser-ce';
 import { Game } from './game';
 import { buildMob } from './mob';
 import { newGame } from './utility';
@@ -11,8 +12,8 @@ function platform2() {
         firstBonus = true,
         firstDoor = true,
         n = 0;
-    let doorPosition = Math.floor(Math.random()*1000)%200;
-    let bonusPosition = Math.floor(Math.random()*1000)%200;
+    const doorPosition = Math.floor(Math.random()*1000)%200;
+    const bonusPosition = Math.floor(Math.random()*1000)%200;
     for (j = 0; j< 11; j++) {
         for (i = 0; i < 29; i++) {
             if (i%2 && j%2 || i<2 && j<2) {

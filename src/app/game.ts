@@ -1,3 +1,4 @@
+import Phaser from 'phaser-ce';
 import { initWalls, newGame } from './utility';
 
 export class Game {

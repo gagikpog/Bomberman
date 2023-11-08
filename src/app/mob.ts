@@ -1,3 +1,4 @@
+import Phaser from 'phaser-ce';
 
 /**
 * @function buildMob Конструктор бота
