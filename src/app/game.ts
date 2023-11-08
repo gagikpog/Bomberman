@@ -1,28 +1,29 @@
-import { initWalls } from './utility';
+import { initWalls, newGame } from './utility';
 
 export class Game {
 
+    private player = null;
+    private engine = null;
+    private time = 180;
+    private mobsCount = 10;
+    private score = 0;
+    private isGame = true;
+    private stage = 1;
+    private bombs = [];
+    private blocks = [];
+    private mobs = [];
+    private bonus = null;
+    private _rect = null;
+    private groups = {
+        walls: null,
+        door: null,
+        mobGroup: null,
+        bombsGroup: null,
+        bumGroup: null,
+        wallsBrocken: null
+    };
+
     constructor() {
-
-        this.player = null;
-        this.time = 180;
-        this.mobsCount = 10;
-        this.score = 0;
-        this.isGame = true;
-        this.stage = 1;
-        this.bombs = [];
-        this.blocks = [];
-        this.mobs = [];
-        this.bonus = null;
-
-        this.groups = {
-            walls: null,
-            door: null,
-            mobGroup: null,
-            bombsGroup: null,
-            bumGroup: null,
-            wallsBrocken: null
-        };
 
         this.engine = new Phaser.Game(496, 240, Phaser.AUTO, null, {
             preload: this.preload,
@@ -34,7 +35,6 @@ export class Game {
         this._rect = new Phaser.Rectangle( 0, 0, 500, 500 );
     }
 
-    
     preload = () => {
         this.engine.stage.backgroundColor = '#1F8B00';
         if(navigator.userAgent.toLowerCase().indexOf('firefox') === -1){
@@ -56,7 +56,7 @@ export class Game {
         this.engine.load.spritesheet('block3','block3.png', 16, 16, 7);
         this.engine.load.spritesheet('bonuses','bonuses.png', 16, 16, 14);
         this.engine.load.spritesheet('door','door.png', 16, 16, 14);
-    }
+    };
 
     render = () => {
         if (this.isGame) {
@@ -65,11 +65,11 @@ export class Game {
             this.engine.debug.geom(this._rect, 'rgba(0, 0, 0, 1)');
             this.engine.debug.text(`STAGE ${this.stage}`, 210, 120);
         }
-    }
+    };
 
     create = () => {
         setInterval(()=> {
-            if (this.time-- == 0) {
+            if (this.time-- === 0) {
                 this.player.Die();
                 this.time = 180;
             }
@@ -78,19 +78,19 @@ export class Game {
         this.engine.physics.startSystem(Phaser.Physics.ARCADE);
         this.groups.walls = this.engine.add.group();
         this.groups.walls.enableBody = true;
-    
+
         this.groups.wallsBrocken = this.engine.add.group();
         this.groups.wallsBrocken.enableBody = true;
-    
+
         this.groups.bombsGroup = this.engine.add.group();
         this.groups.bombsGroup.enableBody = true;
-    
+
         this.groups.bumGroup = this.engine.add.group();
         this.groups.bumGroup.enableBody = true;
-    
+
         this.groups.mobGroup = this.engine.add.group();
         this.groups.mobGroup.enableBody = true;
-    
+
         this.engine.add.sprite(-100, -5, 'block1').scale.set(45, 2.6);
         this.groups.door = this.engine.add.sprite(0, 0, 'door');
         this.groups.door.name = 'door';
@@ -99,7 +99,7 @@ export class Game {
         this.groups.door.body.collideWorldBounds = true;
         this.groups.door.body.immovable = true;
         this.engine.world.sendToBack(this.groups.door);
-    
+
         this.bonus = this.engine.add.sprite(0, 0, 'bonuses');
         this.bonus.name = 'bonus';
         this.engine.physics.enable(this.bonus, Phaser.Physics.ARCADE);
@@ -110,9 +110,9 @@ export class Game {
 
         // FIXME: global functions
         initWalls(this.groups.walls);
-        newGame();
-    }
-    
+        newGame(this);
+    };
+
     update = () => {
         this.engine.physics.arcade.collide(this.player.target, this.groups.walls);
         this.engine.physics.arcade.collide(this.player.target, this.groups.wallsBrocken);
@@ -129,5 +129,5 @@ export class Game {
 
         this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.wallsBrocken);
         this.player.update();
-    }
+    };
 }
