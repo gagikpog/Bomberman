@@ -31,7 +31,7 @@ export function buildWalls(game: IGame) {
                 game.blocks.push(buildBlock(game.groups.wallsBrocken.create(i * 16 + 16, j * 16 + 48, 'block2'), game));
             } else {
                 if (b > 0.92 && _mobsCount-- > 0) {
-                    game.mobs.push(new Mob(game.groups.mobGroup.create(i * 16 + 16, j * 16 + 48, 'mob1')));
+                    game.mobs.push(new Mob(game, { x: i, y: j }));
                 }
             }
             n++;

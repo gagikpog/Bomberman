@@ -133,6 +133,8 @@ export class Game implements IGame {
             this.newGame();
             return;
         }
+
+        this.bonus?.destroy();
         this.bonus = new Bonus(this);
         const destroy = (item) => item.destroy();
         this.blocks.forEach(destroy);

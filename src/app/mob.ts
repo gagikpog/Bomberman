@@ -1,14 +1,16 @@
 import Phaser from 'phaser-ce';
-import { IMob } from './interfaces';
+import { IGame, IMob } from './interfaces';
 
 export class Mob implements IMob {
     die = false;
     private _target: Phaser.Sprite;
     private _speed = 40;
     private _score = 100;
+    private _game: IGame;
 
-    constructor(target: Phaser.Sprite) {
-        this._target = target;
+    constructor(game: IGame, pos: {x: number; y: number}) {
+        this._game = game;
+        this._target = game.groups.mobGroup.create(pos.x * 16 + 16, pos.y * 16 + 48, 'mob1');
 
         this._target.name = 'mob';
 
@@ -81,7 +83,8 @@ export class Mob implements IMob {
         this._target.animations.play('mobDie', 10, false);
         this.die = true;
         this._target.body.velocity.setTo(0, 0);
-        myGame.score += this._score;
+        // FIXME: Переместить в правильное место
+        this._game.score += this._score;
         setTimeout(()=>{
             this.destroy();
         }, 1000);
