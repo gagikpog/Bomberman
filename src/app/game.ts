@@ -1,18 +1,18 @@
 import Phaser from 'phaser-ce';
 import { bindKeyboard, buildMainWalls, buildWalls } from './functions';
-import { IGame } from './interfaces';
+import { IBonus, IGame, IMan, IMob } from './interfaces';
 import { Man } from './man';
 import { Bonus } from './bonus';
 
 export class Game implements IGame {
 
     public mobsCount = 10;
-    public bonus = null;
-    public player = null;
-    public engine = null;
-    public bombs = [];
-    public mobs = [];
-    public blocks = [];
+    public bonus: IBonus = null;
+    public player: IMan = null;
+    public engine: Phaser.Game = null;
+    public bombs: Phaser.Sprite[] = [];
+    public mobs: IMob[] = [];
+    public blocks: Phaser.Sprite[] = [];
     public isGame = true;
     public score = 0;
     public groups = {
@@ -37,12 +37,12 @@ export class Game implements IGame {
             render: this.render
         });
 
-        this._rect = new Phaser.Rectangle( 0, 0, 500, 500 );
+        this._rect = new Phaser.Rectangle(0, 0, 500, 500);
     }
 
     preload = () => {
         this.engine.stage.backgroundColor = '#1F8B00';
-        if(navigator.userAgent.toLowerCase().indexOf('firefox') === -1){
+        if (navigator.userAgent.toLowerCase().indexOf('firefox') === -1) {
             // Do Firefox-related activities
             this.engine.load.baseURL = '/assets/';
             this.engine.load.crossOrigin = 'anonymous';
@@ -56,16 +56,16 @@ export class Game implements IGame {
         this.engine.load.spritesheet('bum', 'bum.png', 48, 48, 4);
         this.engine.load.spritesheet('bum1', 'b1.png', 36, 12, 1);
         this.engine.load.spritesheet('bum2', 'b2.png', 12, 36, 1);
-        this.engine.load.spritesheet('block1','block1.png', 16,16, 1);
-        this.engine.load.spritesheet('block2','block2.png', 16,16, 1);
-        this.engine.load.spritesheet('block3','block3.png', 16, 16, 7);
-        this.engine.load.spritesheet('bonuses','bonuses.png', 16, 16, 14);
-        this.engine.load.spritesheet('door','door.png', 16, 16, 14);
+        this.engine.load.spritesheet('block1', 'block1.png', 16, 16, 1);
+        this.engine.load.spritesheet('block2', 'block2.png', 16, 16, 1);
+        this.engine.load.spritesheet('block3', 'block3.png', 16, 16, 7);
+        this.engine.load.spritesheet('bonuses', 'bonuses.png', 16, 16, 14);
+        this.engine.load.spritesheet('door', 'door.png', 16, 16, 14);
     };
 
     render = () => {
         if (this.isGame) {
-            this.engine.debug.text( `TIME  ${this.time}            ${this.score}             LEFT  ${this.player.lives}`, 60, 20 );
+            this.engine.debug.text(`TIME  ${this.time}            ${this.score}             LEFT  ${this.player.lives}`, 60, 20);
         } else {
             this.engine.debug.geom(this._rect, 'rgba(0, 0, 0, 1)');
             this.engine.debug.text(`STAGE ${this.stage}`, 210, 120);
@@ -73,9 +73,9 @@ export class Game implements IGame {
     };
 
     create = () => {
-        setInterval(()=> {
+        setInterval(() => {
             if (this.time-- === 0) {
-                this.player.Die();
+                this.player.die();
                 this.time = 180;
             }
         }, 1000);
@@ -146,8 +146,6 @@ export class Game implements IGame {
         this.mobs = [];
         this.bombs = [];
         buildWalls(this);
-        this.player.target.x = 16;
-        this.player.target.y = 48;
         this.player.comeToLife();
     }
 
@@ -170,7 +168,7 @@ export class Game implements IGame {
         this.stage++;
         this.player.lives++;
         this.isGame = false;
-        setTimeout(()=> {
+        setTimeout(() => {
             this.isGame = true;
         }, 3000);
         this.nextLevel();

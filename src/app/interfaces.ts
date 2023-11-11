@@ -27,6 +27,11 @@ export interface IMob {
 }
 
 export interface IMan {
+    lives: number;
+    readonly target: Phaser.Sprite;
+    comeToLife(): void;
+    die(): void;
+    update(): void;
     dropBomb(): void;
     blowUp(): void;
     destroy(): void;
@@ -40,3 +45,8 @@ export interface IBonus {
 }
 
 export type IWall = Phaser.Sprite;
+
+export interface IPosition {
+    x: number;
+    y: number;
+}
