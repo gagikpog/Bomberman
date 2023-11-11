@@ -1,11 +1,15 @@
 import Phaser from 'phaser-ce';
+import { IGame, IMan } from './interfaces';
 
-export class Man {
+export class Man implements IMan {
 
     private _life;
     private _speed;
+    private _game: IGame;
+
     private target;
     private keyboard;
+    private name;
 
     // Умения
     private skills = {
@@ -57,9 +61,10 @@ export class Man {
         }
     }
 
-    constructor() {
-        this.target = myGame.engine.add.sprite(16, 48, 'man');
-        myGame.engine.physics.enable(this.target, Phaser.Physics.ARCADE);
+    constructor(game: IGame) {
+        this._game = game;
+        this.target = this._game.engine.add.sprite(16, 48, 'man');
+        this._game.engine.physics.enable(this.target, Phaser.Physics.ARCADE);
 
         this.target.name = 'man';
         this.name = 'man';
@@ -73,10 +78,10 @@ export class Man {
 
         // Подписка на события мыши.
         this.keyboard = {
-            leftKey: myGame.engine.input.keyboard.addKey(Phaser.Keyboard.LEFT),
-            rightKey: myGame.engine.input.keyboard.addKey(Phaser.Keyboard.RIGHT),
-            upKey: myGame.engine.input.keyboard.addKey(Phaser.Keyboard.UP),
-            downKey: myGame.engine.input.keyboard.addKey(Phaser.Keyboard.DOWN)
+            leftKey: this._game.engine.input.keyboard.addKey(Phaser.Keyboard.LEFT),
+            rightKey: this._game.engine.input.keyboard.addKey(Phaser.Keyboard.RIGHT),
+            upKey: this._game.engine.input.keyboard.addKey(Phaser.Keyboard.UP),
+            downKey: this._game.engine.input.keyboard.addKey(Phaser.Keyboard.DOWN)
         };
     }
 
@@ -108,10 +113,10 @@ export class Man {
         this.target.animations.play('manDie', 10, false);
         this.skills.die = true;
         setTimeout(() => {
-            myGame.isGame = false;
+            this._game.isGame = false;
             setTimeout(()=>{
-                nextLevel();
-                myGame.isGame = true;
+                this._game.nextLevel();
+                this._game.isGame = true;
             }, 3000);
         }, 3000);
     }
@@ -165,32 +170,48 @@ export class Man {
         this.target.animations.play('manStop', 10, false);
     }
 
-    dropBomb(pos) {
-        pos.x += 8;
-        pos.y += 8;
-        const posX = pos.x - pos.x % 16;
-        const posY = pos.y - pos.y % 16;
-        let i = 0;
-        for (i = 0;i < myGame.bombs.length; i++) {
-            if (myGame.bombs[i].x === posX && myGame.bombs[i].y === posY) {
-                return;
+    dropBomb() {
+        if (this._game.bombs.length < this.skills.bombsStock && !this.skills.die) {
+            const x = this.target.x + 8;
+            const y = this.target.y + 8;
+
+            const posX = x - x % 16;
+            const posY = y - y % 16;
+            let i = 0;
+            for (i = 0;i < this._game.bombs.length; i++) {
+                if (this._game.bombs[i].x === posX && this._game.bombs[i].y === posY) {
+                    return;
+                }
+            }
+            const bomb = this._game.groups.bombsGroup.create(posX, posY, 'bomb');
+
+            bomb.name = 'bomb';
+            bomb.animations.add('bombLife', [1, 0, 2, 0]);
+            bomb.animations.play('bombLife', 5, true);
+            bomb.body.immovable = true;
+
+            this._game.bombs.push(bomb);
+            this._game.engine.world.bringToTop(this.target);
+            if (!this.skills.isSapper) {
+                setTimeout(() => {
+                    this._blowUp();
+                }, 3000);
             }
         }
-        const bomb = myGame.groups.bombsGroup.create(posX, posY, 'bomb');
-        buildBomb(bomb);
-        bomb.body.immovable = true;
-        myGame.bombs.push(bomb);
-        myGame.engine.world.bringToTop(this.target);
-        if (!this.skills.isSapper) {
-            setTimeout(this.blowUp, 3000);
+
+    }
+
+    blowUp() {
+        if (this.skills.isSapper) {
+            this._blowUp();
         }
     }
 
-    blowUp = () => {
-        if (myGame.bombs[0]) {
-            const bum = myGame.engine.add.sprite(myGame.bombs[0].x - 16, myGame.bombs[0].y - 16, 'bum');
-            const bum1 = myGame.groups.bumGroup.create(myGame.bombs[0].x - 10, myGame.bombs[0].y + 2, 'bum1');
-            const bum2 = myGame.groups.bumGroup.create(myGame.bombs[0].x + 2, myGame.bombs[0].y - 10, 'bum2');
+    _blowUp() {
+        if (!this.skills.die && this._game.bombs[0]) {
+            const bum = this._game.engine.add.sprite(this._game.bombs[0].x - 16, this._game.bombs[0].y - 16, 'bum');
+            const bum1 = this._game.groups.bumGroup.create(this._game.bombs[0].x - 10, this._game.bombs[0].y + 2, 'bum1');
+            const bum2 = this._game.groups.bumGroup.create(this._game.bombs[0].x + 2, this._game.bombs[0].y - 10, 'bum2');
 
             bum.animations.add('bombBum', [0, 1, 2, 3, 2, 1, 0]);
             bum.animations.play('bombBum', 10, false);
@@ -199,17 +220,18 @@ export class Man {
             bum2.name = 'bum0';
             bum1.body.immovable = true;
             bum2.body.immovable = true;
-            myGame.engine.world.bringToTop(this.target);
-            myGame.engine.world.sendToBack(bum);
+            this._game.engine.world.bringToTop(this.target);
+            this._game.engine.world.sendToBack(bum);
 
-            myGame.bombs.shift().destroy();
+            const bomb = this._game.bombs.shift();
+            bomb.destroy();
             setTimeout(() => {
                 bum.destroy();
                 bum1.destroy();
                 bum2.destroy();
             }, 700);
         }
-    };
+    }
 
     collideHandler = (_man, spr) => {
 
@@ -219,21 +241,21 @@ export class Man {
             this.Die();
             break;
         case 'bonus':
-            myGame.bonus.check = true;
-            myGame.bonus.x = -100;
-            myGame.score += myGame.bonus.score;
+            this._game.bonus.check = true;
+            this._game.bonus.x = -100;
+            this._game.score += this._game.bonus.score;
             break;
         case 'door':
-            if (myGame.bonus.check) {
+            if (this._game.bonus.check) {
                 let i = 0;
-                for (i = 0; i < myGame.mobs.length; i++) {
-                    if (!myGame.mobs[i].die) {
+                for (i = 0; i < this._game.mobs.length; i++) {
+                    if (!this._game.mobs[i].die) {
                         return;
                     }
                 }
 
-                myGame.bonus.check = false;
-                this.winLevel(myGame);
+                this._game.bonus.check = false;
+                this.winLevel(this._game);
             }
             break;
         }
@@ -246,6 +268,6 @@ export class Man {
         setTimeout(()=> {
             game.isGame = true;
         }, 3000);
-        nextLevel();
+        game.nextLevel();
     }
 }

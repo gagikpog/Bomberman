@@ -1,21 +1,19 @@
 import Phaser from 'phaser-ce';
-import { initWalls, newGame } from './utility';
+import { bindKeyboard, buildMainWalls, buildWalls } from './functions';
+import { IGame } from './interfaces';
+import { Man } from './man';
 
-export class Game {
+export class Game implements IGame {
 
-    private player = null;
-    private engine = null;
-    private time = 180;
-    private mobsCount = 10;
-    private score = 0;
-    private isGame = true;
-    private stage = 1;
-    private bombs = [];
-    private blocks = [];
-    private mobs = [];
-    private bonus = null;
-    private _rect = null;
-    private groups = {
+    public mobsCount = 10;
+    public bonus = null;
+    public player = null;
+    public engine = null;
+    public bombs = [];
+    public mobs = [];
+    public blocks = [];
+    public isGame = true;
+    public groups = {
         walls: null,
         door: null,
         mobGroup: null,
@@ -23,6 +21,11 @@ export class Game {
         bumGroup: null,
         wallsBrocken: null
     };
+
+    private time = 180;
+    private score = 0;
+    private stage = 1;
+    private _rect = null;
 
     constructor() {
 
@@ -109,9 +112,8 @@ export class Game {
         this.engine.world.sendToBack(this.bonus);
         this.bonus.score = 1000;
 
-        // FIXME: global functions
-        initWalls(this.groups.walls);
-        newGame(this);
+        buildMainWalls(this);
+        this.newGame();
     };
 
     update = () => {
@@ -131,4 +133,50 @@ export class Game {
         this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.wallsBrocken);
         this.player.update();
     };
+
+    nextLevel() {
+        if (this.player.lives === 0) {
+            alert('Game over');
+            this.newGame();
+            return;
+        }
+
+        let i;
+        for (i = 0; i < this.blocks.length; i++) {
+            if (this.blocks[i].destroy) {
+                this.blocks[i].destroy();
+            }
+        }
+        for (i = 0; i < this.mobs.length; i++) {
+            this.mobs[i].destroy();
+        }
+        for (i = 0; i < this.bombs.length; i++) {
+            if (this.bombs[i].destroy) {
+                this.bombs[i].destroy();
+            }
+        }
+
+        this.time = 180;
+        this.blocks = [];
+        this.mobs = [];
+        buildWalls(this);
+        this.player.target.x = 16;
+        this.player.target.y = 48;
+        this.player.comeToLife();
+    }
+
+    newGame() {
+        if (this.player) {
+            this.player.destroy();
+        }
+
+        // Создается игрок, происходить инициализация и привязка всех методов.
+        this.player = new Man(this);
+        this.engine.world.bringToTop(this.groups.walls);
+
+        this.score = 0;
+        this.stage = 1;
+        this.nextLevel();
+        bindKeyboard(this);
+    }
 }
