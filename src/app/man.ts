@@ -72,7 +72,7 @@ export class Man implements IMan {
         this.target.body.collideWorldBounds = true;
         this.target.body.setCircle(8);
         this.target.body.onCollide = new Phaser.Signal();
-        this.target.body.onCollide.add(this.collideHandler, this);
+        this.target.body.onCollide.add(this._collideHandler, this);
 
         this._initSprites();
 
@@ -233,7 +233,7 @@ export class Man implements IMan {
         }
     }
 
-    collideHandler = (_man, spr) => {
+    private _collideHandler = (_man, spr) => {
 
         switch(spr.name) {
         case 'mob':
@@ -241,33 +241,17 @@ export class Man implements IMan {
             this.Die();
             break;
         case 'bonus':
-            this._game.bonus.check = true;
-            this._game.bonus.x = -100;
             this._game.score += this._game.bonus.score;
+            this._game.bonus.destroy();
             break;
         case 'door':
-            if (this._game.bonus.check) {
-                let i = 0;
-                for (i = 0; i < this._game.mobs.length; i++) {
-                    if (!this._game.mobs[i].die) {
-                        return;
-                    }
+            if (this._game.bonus.destroy) {
+                const allMobsDied = this._game.mobs.every((mob) => mob.die);
+                if (allMobsDied) {
+                    this._game.winLevel();
                 }
-
-                this._game.bonus.check = false;
-                this.winLevel(this._game);
             }
             break;
         }
     };
-
-    winLevel(game) {
-        game.stage++;
-        game.player.lives++;
-        game.isGame = false;
-        setTimeout(()=> {
-            game.isGame = true;
-        }, 3000);
-        game.nextLevel();
-    }
 }

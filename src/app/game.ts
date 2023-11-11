@@ -2,6 +2,7 @@ import Phaser from 'phaser-ce';
 import { bindKeyboard, buildMainWalls, buildWalls } from './functions';
 import { IGame } from './interfaces';
 import { Man } from './man';
+import { Bonus } from './bonus';
 
 export class Game implements IGame {
 
@@ -13,6 +14,7 @@ export class Game implements IGame {
     public mobs = [];
     public blocks = [];
     public isGame = true;
+    public score = 0;
     public groups = {
         walls: null,
         door: null,
@@ -23,7 +25,6 @@ export class Game implements IGame {
     };
 
     private time = 180;
-    private score = 0;
     private stage = 1;
     private _rect = null;
 
@@ -104,14 +105,6 @@ export class Game implements IGame {
         this.groups.door.body.immovable = true;
         this.engine.world.sendToBack(this.groups.door);
 
-        this.bonus = this.engine.add.sprite(0, 0, 'bonuses');
-        this.bonus.name = 'bonus';
-        this.engine.physics.enable(this.bonus, Phaser.Physics.ARCADE);
-        this.bonus.body.collideWorldBounds = true;
-        this.bonus.body.setCircle(1);
-        this.engine.world.sendToBack(this.bonus);
-        this.bonus.score = 1000;
-
         buildMainWalls(this);
         this.newGame();
     };
@@ -140,25 +133,16 @@ export class Game implements IGame {
             this.newGame();
             return;
         }
-
-        let i;
-        for (i = 0; i < this.blocks.length; i++) {
-            if (this.blocks[i].destroy) {
-                this.blocks[i].destroy();
-            }
-        }
-        for (i = 0; i < this.mobs.length; i++) {
-            this.mobs[i].destroy();
-        }
-        for (i = 0; i < this.bombs.length; i++) {
-            if (this.bombs[i].destroy) {
-                this.bombs[i].destroy();
-            }
-        }
+        this.bonus = new Bonus(this);
+        const destroy = (item) => item.destroy();
+        this.blocks.forEach(destroy);
+        this.mobs.forEach(destroy);
+        this.bombs.forEach(destroy);
 
         this.time = 180;
         this.blocks = [];
         this.mobs = [];
+        this.bombs = [];
         buildWalls(this);
         this.player.target.x = 16;
         this.player.target.y = 48;
@@ -179,4 +163,15 @@ export class Game implements IGame {
         this.nextLevel();
         bindKeyboard(this);
     }
+
+    winLevel() {
+        this.stage++;
+        this.player.lives++;
+        this.isGame = false;
+        setTimeout(()=> {
+            this.isGame = true;
+        }, 3000);
+        this.nextLevel();
+    }
+
 }

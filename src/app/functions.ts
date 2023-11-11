@@ -24,8 +24,7 @@ export function buildWalls(game: IGame) {
                     firstDoor = false;
                 } else {
                     if (n > bonusPosition && firstBonus) {
-                        game.bonus.x = i * 16 + 16;
-                        game.bonus.y = j * 16 + 48;
+                        game.bonus.setPosition(i * 16 + 16, j * 16 + 48);
                         firstBonus = false;
                     }
                 }
@@ -93,6 +92,9 @@ function destroyWall(game: IGame, wall: IWall): void {
 
 export function bindKeyboard(game: IGame): void {
     game.engine.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(() => {
+        game.player.dropBomb();
+    });
+    game.engine.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR).onDown.add(() => {
         game.player.dropBomb();
     });
     game.engine.input.keyboard.addKey(Phaser.Keyboard.X).onDown.add(() => {
