@@ -1,5 +1,6 @@
 import Phaser from 'phaser-ce';
-import { IGame, IMan } from './interfaces';
+import { IBonus, IGame, IMan } from './interfaces';
+import { BonusType } from './enums';
 
 export class Man implements IMan {
 
@@ -7,7 +8,6 @@ export class Man implements IMan {
 
     private name;
     private _life;
-    private _speed;
     private _game: IGame;
     private _target: Phaser.Sprite;
     private _keyboard;
@@ -19,33 +19,27 @@ export class Man implements IMan {
 
     // Умения
     private _skills = {
-        // Кол. бомб который может поставить
-        bombsStock: 1,
-        // Умение самому взорвать бомбы по кнопке "X".
-        isSapper: false,
+        // Количество бомб который может поставить
+        bombs: 1,
+        // TODO: Не сделано
+        // Радиус взрыва
+        flames: 1,
+        // Скорость
+        speed: 60,
+        // TODO: Не сделано
         // Умение проходить сквозь стену
-        isSpook: false,
+        wallPass: true,
+        // Умение самому взорвать бомбы по кнопке "X".
+        detonator: false,
+        // TODO: Не сделано
         // Умение проходить сквозь бомбу
-        isBypassBombs: false,
+        bombPass: false,
+        // TODO: Не сделано
+        // Способность не получать уран от бомбы
+        flamePass: false,
         // Бессмертие
-        deathless: false,
+        mystery: false
     };
-
-    // Создается свойство speed. Максимальное значение 3, минимальное 0.5.
-    get speed() {
-        return this._speed === void 0 ? (this._speed = 0.5) : this._speed;
-    }
-
-    set speed(val) {
-        this._speed = val;
-        if (val < 0.5) {
-            this._speed = 0.5;
-        }
-
-        if (val > 3) {
-            this._speed = 3;
-        }
-    }
 
     constructor(game: IGame) {
         this._game = game;
@@ -78,13 +72,21 @@ export class Man implements IMan {
 
     // Умирает
     die(): void {
-        if (this._die || this._skills.deathless) {
+        if (this._die || this._skills.mystery) {
             return;
         }
         this.lives--;
         this._target.body.velocity.setTo(0, 0);
         this._target.animations.play('manDie', 10, false);
         this._die = true;
+
+        // Навыки которые теряются при смерти
+        this._skills.wallPass = false;
+        this._skills.detonator = false;
+        this._skills.bombPass = false;
+        this._skills.flamePass = false;
+        this._skills.mystery = false;
+
         setTimeout(() => {
             this._game.isGame = false;
             setTimeout(()=>{
@@ -120,7 +122,7 @@ export class Man implements IMan {
     }
 
     dropBomb() {
-        if (this._game.bombs.length < this._skills.bombsStock && !this._die) {
+        if (this._game.bombs.length < this._skills.bombs && !this._die) {
             const x = this._target.x + 8;
             const y = this._target.y + 8;
 
@@ -141,39 +143,38 @@ export class Man implements IMan {
 
             this._game.bombs.push(bomb);
             this._game.engine.world.bringToTop(this._target);
-            if (!this._skills.isSapper) {
+            if (!this._skills.detonator) {
                 setTimeout(() => {
                     this._blowUp();
                 }, 3000);
             }
         }
-
     }
 
     blowUp() {
-        if (this._skills.isSapper) {
+        if (this._skills.detonator) {
             this._blowUp();
         }
     }
 
     // Движение в каждую сторону и запуск соответствующей анимации.
     private _goLeft() {
-        this._target.body.velocity.setTo(-60, 0);
+        this._target.body.velocity.setTo(-this._skills.speed, 0);
         this._target.animations.play('manWalkLeft', 10, true);
     }
 
     private _goRight() {
-        this._target.body.velocity.setTo(60, 0);
+        this._target.body.velocity.setTo(this._skills.speed, 0);
         this._target.animations.play('manWalkRight', 10, true);
     }
 
     private _goDown() {
-        this._target.body.velocity.setTo(0, 60);
+        this._target.body.velocity.setTo(0, this._skills.speed);
         this._target.animations.play('manWalkDown', 10, true);
     }
 
     private _goUp() {
-        this._target.body.velocity.setTo(0, -60);
+        this._target.body.velocity.setTo(0, -this._skills.speed);
         this._target.animations.play('manWalkUp', 10, true);
     }
 
@@ -230,6 +231,7 @@ export class Man implements IMan {
             break;
         case 'bonus':
             if (this._game.bonus.canDestroy()) {
+                this._applyBonus(this._game.bonus);
                 this._game.score += this._game.bonus.score;
                 this._game.bonus.destroy();
             }
@@ -244,4 +246,36 @@ export class Man implements IMan {
             break;
         }
     };
+
+    private _applyBonus(bonus: IBonus): void {
+        switch (bonus.type) {
+        case BonusType.Bombs:
+            this._skills.bombs++;
+            break;
+        case BonusType.Flames:
+            this._skills.flames++;
+            break;
+        case BonusType.Speed:
+            this._skills.speed += 10;
+            break;
+        case BonusType.WallPass:
+            this._skills.wallPass = true;
+            break;
+        case BonusType.Detonator:
+            this._skills.detonator = true;
+            break;
+        case BonusType.BombPass:
+            this._skills.bombPass = true;
+            break;
+        case BonusType.FlamePass:
+            this._skills.flamePass = true;
+            break;
+        case BonusType.Mystery:
+            this._skills.mystery = true;
+            setTimeout(() => {
+                this._skills.mystery = false;
+            }, 20_000);
+            break;
+        }
+    }
 }

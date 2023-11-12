@@ -20,6 +20,7 @@ export class Game implements IGame {
     public gameWidth = 31;
     public gameHeight = 13;
     public blockSize = 16;
+    public stage = 1;
     public groups = {
         walls: null,
         mobGroup: null,
@@ -29,7 +30,6 @@ export class Game implements IGame {
     };
 
     private time = 180;
-    private stage = 1;
     private _prevTime = 0;
     private _rect = null;
     private _refs: {

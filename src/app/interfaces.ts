@@ -1,3 +1,5 @@
+import { BonusType } from './enums';
+
 export interface IGame {
     engine: Phaser.Game;
     mobsCount: number;
@@ -12,6 +14,7 @@ export interface IGame {
     gameWidth: number;
     gameHeight: number;
     blockSize: number;
+    stage: number;
     groups: {
         walls: Phaser.Group;
         mobGroup: Phaser.Group;
@@ -42,6 +45,7 @@ export interface IMan {
 
 export interface IBonus {
     score: number;
+    type: BonusType;
     destroyed: boolean;
     readonly target: Phaser.Sprite;
     destroy(): void;
