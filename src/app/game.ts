@@ -62,7 +62,7 @@ export class Game implements IGame {
         this.engine.stage.backgroundColor = '#1F8B00';
         if (navigator.userAgent.toLowerCase().indexOf('firefox') === -1) {
             // Do Firefox-related activities
-            this.engine.load.baseURL = '/assets/';
+            this.engine.load.baseURL = './assets/';
             this.engine.load.crossOrigin = 'anonymous';
         }
         this.engine.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
