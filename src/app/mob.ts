@@ -1,5 +1,5 @@
 import Phaser from 'phaser-ce';
-import { IGame, IMob } from './interfaces';
+import { IGame, IMob, IPosition } from './interfaces';
 
 export class Mob implements IMob {
     die = false;
@@ -8,9 +8,9 @@ export class Mob implements IMob {
     private _score = 100;
     private _game: IGame;
 
-    constructor(game: IGame, pos: {x: number; y: number}) {
+    constructor(game: IGame, pos: IPosition) {
         this._game = game;
-        this._target = game.groups.mobGroup.create(pos.x * 16 + 16, pos.y * 16 + 48, 'mob1');
+        this._target = game.groups.mobGroup.create(pos.x, pos.y, 'mob1');
 
         this._target.name = 'mob';
 
@@ -25,7 +25,7 @@ export class Mob implements IMob {
         // Загрузка изначальной кортики.
         this._target.animations.play('mobWalkLeft', 8, true);
         this._target.update = this._update;
-        this._goRight();
+        this._collide();
     }
 
     public destroy(): void {

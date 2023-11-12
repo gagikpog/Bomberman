@@ -1,13 +1,15 @@
 import Phaser from 'phaser-ce';
-import { bindKeyboard, buildMainWalls, buildWalls } from './functions';
-import { IBonus, IGame, IMan, IMob } from './interfaces';
+import { bindKeyboard } from './functions';
+import { IBonus, IDoor, IGame, IMan, IMob } from './interfaces';
 import { Man } from './man';
-import { Bonus } from './bonus';
+import { buildMainWalls, buildLevel } from './generateMap';
+import { Door } from './door';
 
 export class Game implements IGame {
 
-    public mobsCount = 10;
+    public mobsCount = 6;
     public bonus: IBonus = null;
+    public door: IDoor = null;
     public player: IMan = null;
     public engine: Phaser.Game = null;
     public bombs: Phaser.Sprite[] = [];
@@ -15,9 +17,11 @@ export class Game implements IGame {
     public blocks: Phaser.Sprite[] = [];
     public isGame = true;
     public score = 0;
+    public gameWidth = 31;
+    public gameHeight = 13;
+    public blockSize = 16;
     public groups = {
         walls: null,
-        door: null,
         mobGroup: null,
         bombsGroup: null,
         bumGroup: null,
@@ -26,16 +30,30 @@ export class Game implements IGame {
 
     private time = 180;
     private stage = 1;
+    private _prevTime = 0;
     private _rect = null;
+    private _refs: {
+        time: HTMLSpanElement;
+        score: HTMLSpanElement;
+        lives: HTMLSpanElement;
+        header: HTMLDivElement;
+    };
 
     constructor() {
 
-        this.engine = new Phaser.Game(496, 240, Phaser.AUTO, null, {
+        this.engine = new Phaser.Game(this.gameWidth * this.blockSize, this.gameHeight * this.blockSize, Phaser.AUTO, null, {
             preload: this.preload,
             create: this.create,
             update: this.update,
             render: this.render
         });
+
+        this._refs = {
+            time: document.querySelector('#time'),
+            score: document.querySelector('#score'),
+            lives: document.querySelector('#lives'),
+            header: document.querySelector('#header')
+        };
 
         this._rect = new Phaser.Rectangle(0, 0, 500, 500);
     }
@@ -65,10 +83,16 @@ export class Game implements IGame {
 
     render = () => {
         if (this.isGame) {
-            this.engine.debug.text(`TIME  ${this.time}            ${this.score}             LEFT  ${this.player.lives}`, 60, 20);
+            this._updateStatusBar();
+            this.engine.debug.text('', 60, 20);
         } else {
+            this._hideStatusBar();
             this.engine.debug.geom(this._rect, 'rgba(0, 0, 0, 1)');
-            this.engine.debug.text(`STAGE ${this.stage}`, 210, 120);
+            this.engine.debug.text(
+                `STAGE ${this.stage}`,
+                this.gameWidth * this.blockSize / 2 - 30,
+                this.gameHeight * this.blockSize / 2 - 20
+            );
         }
     };
 
@@ -96,14 +120,7 @@ export class Game implements IGame {
         this.groups.mobGroup = this.engine.add.group();
         this.groups.mobGroup.enableBody = true;
 
-        this.engine.add.sprite(-100, -5, 'block1').scale.set(45, 2.6);
-        this.groups.door = this.engine.add.sprite(0, 0, 'door');
-        this.groups.door.name = 'door';
-        this.engine.physics.enable(this.groups.door, Phaser.Physics.ARCADE);
-        this.groups.door.body.setCircle(1);
-        this.groups.door.body.collideWorldBounds = true;
-        this.groups.door.body.immovable = true;
-        this.engine.world.sendToBack(this.groups.door);
+        this.door = new Door(this);
 
         buildMainWalls(this);
         this.newGame();
@@ -114,8 +131,8 @@ export class Game implements IGame {
         this.engine.physics.arcade.collide(this.player.target, this.groups.wallsBrocken);
         this.engine.physics.arcade.collide(this.player.target, this.groups.bombsGroup);
         this.engine.physics.arcade.collide(this.player.target, this.groups.bumGroup);
-        this.engine.physics.arcade.collide(this.player.target, this.bonus);
-        this.engine.physics.arcade.collide(this.player.target, this.groups.door);
+        this.engine.physics.arcade.collide(this.player.target, this.bonus.target);
+        this.engine.physics.arcade.collide(this.player.target, this.door.target);
         this.engine.physics.arcade.collide(this.player.target, this.groups.mobGroup);
 
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.walls);
@@ -135,7 +152,6 @@ export class Game implements IGame {
         }
 
         this.bonus?.destroy();
-        this.bonus = new Bonus(this);
         const destroy = (item) => item.destroy();
         this.blocks.forEach(destroy);
         this.mobs.forEach(destroy);
@@ -145,7 +161,7 @@ export class Game implements IGame {
         this.blocks = [];
         this.mobs = [];
         this.bombs = [];
-        buildWalls(this);
+        buildLevel(this);
         this.player.comeToLife();
     }
 
@@ -172,6 +188,26 @@ export class Game implements IGame {
             this.isGame = true;
         }, 3000);
         this.nextLevel();
+    }
+
+    private _updateStatusBar(): void {
+        if (this._prevTime !== this.time) {
+            this._prevTime = this.time;
+            this._refs.time.innerText = `${this.time}`;
+            this._refs.score.innerText = `${this.score}`;
+            this._refs.lives.innerText = `${this.player.lives}`;
+        }
+
+        if (this._refs.header.classList.contains('header-hidden')) {
+            this._refs.header.classList.toggle('header-hidden');
+        }
+
+    }
+
+    private _hideStatusBar(): void {
+        if (!this._refs.header.classList.contains('header-hidden')) {
+            this._refs.header.classList.toggle('header-hidden');
+        }
     }
 
 }

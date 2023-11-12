@@ -49,8 +49,8 @@ export class Man implements IMan {
 
     constructor(game: IGame) {
         this._game = game;
-        this._target = this._game.engine.add.sprite(16, 48, 'man');
-        this._game.engine.physics.enable(this._target, Phaser.Physics.ARCADE);
+        this._target = this._game.engine.add.sprite(16, 16, 'man');
+        this._game.engine.physics.arcade.enable(this._target);
 
         this._target.name = 'man';
         this.name = 'man';
@@ -98,7 +98,7 @@ export class Man implements IMan {
     comeToLife() {
         this._die = false;
         this._target.x = 16;
-        this._target.y = 48;
+        this._target.y = 16;
         this._target.animations.play('manStop', 10, false);
     }
 
@@ -229,11 +229,13 @@ export class Man implements IMan {
             this.die();
             break;
         case 'bonus':
-            this._game.score += this._game.bonus.score;
-            this._game.bonus.destroy();
+            if (this._game.bonus.canDestroy()) {
+                this._game.score += this._game.bonus.score;
+                this._game.bonus.destroy();
+            }
             break;
         case 'door':
-            if (this._game.bonus.destroy) {
+            if (this._game.bonus.destroyed && this._game.door.opened()) {
                 const allMobsDied = this._game.mobs.every((mob) => mob.die);
                 if (allMobsDied) {
                     this._game.winLevel();

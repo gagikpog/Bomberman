@@ -5,12 +5,15 @@ export interface IGame {
     blocks: IWall[];
     bombs: Phaser.Sprite[];
     bonus: IBonus;
+    door: IDoor;
     player: IMan;
     isGame: boolean;
     score: number;
+    gameWidth: number;
+    gameHeight: number;
+    blockSize: number;
     groups: {
         walls: Phaser.Group;
-        door: Phaser.Group;
         mobGroup: Phaser.Group;
         bombsGroup: Phaser.Group;
         bumGroup: Phaser.Group;
@@ -40,8 +43,18 @@ export interface IMan {
 export interface IBonus {
     score: number;
     destroyed: boolean;
+    readonly target: Phaser.Sprite;
     destroy(): void;
-    setPosition(x: number, y: number): void;
+    canDestroy(): boolean;
+    setBlock(block: Phaser.Sprite): void;
+    setPosition(pos: IPosition): void;
+}
+
+export interface IDoor {
+    readonly target: Phaser.Sprite;
+    opened(): boolean;
+    setBlock(block: Phaser.Sprite): void;
+    setPosition(pos: IPosition): void;
 }
 
 export type IWall = Phaser.Sprite;
