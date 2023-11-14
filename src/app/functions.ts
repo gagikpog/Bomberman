@@ -1,8 +1,8 @@
 import { IGame, IPosition, IWall } from './interfaces';
 
 export function buildBlock(game: IGame, pos: IPosition): IWall {
-    const block: Phaser.Sprite = game.groups.wallsBrocken.create(pos.x, pos.y, 'block2');
-    block.name = 'block2';
+    const block: Phaser.Sprite = game.groups.wallsBrocken.create(pos.x, pos.y, 'wall');
+    block.name = 'wall';
     block.body.immovable = true;
     block.body.onCollide = new Phaser.Signal();
     block.body.onCollide.add((_b, spr) => {
@@ -15,7 +15,7 @@ export function buildBlock(game: IGame, pos: IPosition): IWall {
 }
 
 function destroyWall(game: IGame, wall: IWall): void {
-    const destroyAnimation = game.engine.add.sprite(wall.x, wall.y, 'block3');
+    const destroyAnimation = game.engine.add.sprite(wall.x, wall.y, 'wallDestroy');
 
     game.engine.physics.arcade.enable(destroyAnimation);
 

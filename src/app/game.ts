@@ -74,9 +74,9 @@ export class Game implements IGame {
         this.engine.load.spritesheet('bum', 'bum.png', 48, 48, 4);
         this.engine.load.spritesheet('bum1', 'b1.png', 36, 12, 1);
         this.engine.load.spritesheet('bum2', 'b2.png', 12, 36, 1);
-        this.engine.load.spritesheet('block1', 'block1.png', 16, 16, 1);
-        this.engine.load.spritesheet('block2', 'block2.png', 16, 16, 1);
-        this.engine.load.spritesheet('block3', 'block3.png', 16, 16, 7);
+        this.engine.load.spritesheet('mainWall', 'mainWall.png', 16, 16, 1);
+        this.engine.load.spritesheet('wall', 'wall.png', 16, 16, 1);
+        this.engine.load.spritesheet('wallDestroy', 'wallDestroy.png', 16, 16, 7);
         this.engine.load.spritesheet('bonuses', 'bonuses.png', 16, 16, 14);
         this.engine.load.spritesheet('door', 'door.png', 16, 16, 14);
     };

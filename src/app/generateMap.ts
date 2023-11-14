@@ -20,7 +20,7 @@ export function buildMainWalls(game: IGame): void {
 
     let result = it.next();
     while (!result.done) {
-        game.groups.walls.create(blockSize * result.value.x, result.value.y * blockSize, 'block1').body.immovable = true;
+        game.groups.walls.create(blockSize * result.value.x, result.value.y * blockSize, 'mainWall').body.immovable = true;
         result = it.next();
     }
 }

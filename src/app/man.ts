@@ -146,7 +146,7 @@ export class Man implements IMan {
             if (!this._skills.detonator) {
                 setTimeout(() => {
                     this._blowUp();
-                }, 3000);
+                }, 2000);
             }
         }
     }
