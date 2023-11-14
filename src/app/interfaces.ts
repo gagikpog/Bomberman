@@ -28,7 +28,10 @@ export interface IGame {
 }
 
 export interface IMob {
-    die: boolean;
+    target: Phaser.Sprite;
+    dead: boolean;
+    score: number;
+    die(): void;
     destroy(): void;
 }
 
@@ -41,6 +44,7 @@ export interface IMan {
     dropBomb(): void;
     blowUp(): void;
     destroy(): void;
+    applyBonus(bonus: IBonus): void;
 }
 
 export interface IBonus {

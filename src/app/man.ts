@@ -7,11 +7,10 @@ export class Man implements IMan {
     public lives = 3;
 
     private name;
-    private _life;
     private _game: IGame;
     private _target: Phaser.Sprite;
     private _keyboard;
-    private _die = false;
+    private _dead = false;
 
     get target(): Phaser.Sprite {
         return this._target;
@@ -51,9 +50,6 @@ export class Man implements IMan {
 
         this._target.body.collideWorldBounds = true;
         this._target.body.setCircle(8);
-        this._target.body.onCollide = new Phaser.Signal();
-        this._target.body.onCollide.add(this._collideHandler, this);
-
         this._initSprites();
 
         // Подписка на события мыши.
@@ -72,13 +68,13 @@ export class Man implements IMan {
 
     // Умирает
     die(): void {
-        if (this._die || this._skills.mystery) {
+        if (this._dead || this._skills.mystery) {
             return;
         }
         this.lives--;
         this._target.body.velocity.setTo(0, 0);
         this._target.animations.play('manDie', 10, false);
-        this._die = true;
+        this._dead = true;
 
         // Навыки которые теряются при смерти
         this._skills.wallPass = false;
@@ -98,14 +94,14 @@ export class Man implements IMan {
 
     // Оживает
     comeToLife() {
-        this._die = false;
+        this._dead = false;
         this._target.x = 16;
         this._target.y = 16;
         this._target.animations.play('manStop', 10, false);
     }
 
     update() {
-        if (this._die) {
+        if (this._dead) {
             return;
         }
         if (this._keyboard.leftKey.isDown) {
@@ -122,7 +118,7 @@ export class Man implements IMan {
     }
 
     dropBomb() {
-        if (this._game.bombs.length < this._skills.bombs && !this._die) {
+        if (this._game.bombs.length < this._skills.bombs && !this._dead) {
             const x = this._target.x + 8;
             const y = this._target.y + 8;
 
@@ -157,6 +153,38 @@ export class Man implements IMan {
         }
     }
 
+    applyBonus(bonus: IBonus): void {
+        switch (bonus.type) {
+        case BonusType.Bombs:
+            this._skills.bombs++;
+            break;
+        case BonusType.Flames:
+            this._skills.flames++;
+            break;
+        case BonusType.Speed:
+            this._skills.speed += 10;
+            break;
+        case BonusType.WallPass:
+            this._skills.wallPass = true;
+            break;
+        case BonusType.Detonator:
+            this._skills.detonator = true;
+            break;
+        case BonusType.BombPass:
+            this._skills.bombPass = true;
+            break;
+        case BonusType.FlamePass:
+            this._skills.flamePass = true;
+            break;
+        case BonusType.Mystery:
+            this._skills.mystery = true;
+            setTimeout(() => {
+                this._skills.mystery = false;
+            }, 20_000);
+            break;
+        }
+    }
+
     // Движение в каждую сторону и запуск соответствующей анимации.
     private _goLeft() {
         this._target.body.velocity.setTo(-this._skills.speed, 0);
@@ -185,7 +213,7 @@ export class Man implements IMan {
 
 
     private _blowUp() {
-        if (!this._die && this._game.bombs[0]) {
+        if (!this._dead && this._game.bombs[0]) {
             const bum = this._game.engine.add.sprite(this._game.bombs[0].x - 16, this._game.bombs[0].y - 16, 'bum');
             const bum1 = this._game.groups.bumGroup.create(this._game.bombs[0].x - 10, this._game.bombs[0].y + 2, 'bum1');
             const bum2 = this._game.groups.bumGroup.create(this._game.bombs[0].x + 2, this._game.bombs[0].y - 10, 'bum2');
@@ -223,59 +251,4 @@ export class Man implements IMan {
         this._target.animations.play('manStop', 10, false);
     }
 
-    private _collideHandler = (_man, spr) => {
-        switch(spr.name) {
-        case 'mob':
-        case 'bum0':
-            this.die();
-            break;
-        case 'bonus':
-            if (this._game.bonus.canDestroy()) {
-                this._applyBonus(this._game.bonus);
-                this._game.score += this._game.bonus.score;
-                this._game.bonus.destroy();
-            }
-            break;
-        case 'door':
-            if (this._game.bonus.destroyed && this._game.door.opened()) {
-                const allMobsDied = this._game.mobs.every((mob) => mob.die);
-                if (allMobsDied) {
-                    this._game.winLevel();
-                }
-            }
-            break;
-        }
-    };
-
-    private _applyBonus(bonus: IBonus): void {
-        switch (bonus.type) {
-        case BonusType.Bombs:
-            this._skills.bombs++;
-            break;
-        case BonusType.Flames:
-            this._skills.flames++;
-            break;
-        case BonusType.Speed:
-            this._skills.speed += 10;
-            break;
-        case BonusType.WallPass:
-            this._skills.wallPass = true;
-            break;
-        case BonusType.Detonator:
-            this._skills.detonator = true;
-            break;
-        case BonusType.BombPass:
-            this._skills.bombPass = true;
-            break;
-        case BonusType.FlamePass:
-            this._skills.flamePass = true;
-            break;
-        case BonusType.Mystery:
-            this._skills.mystery = true;
-            setTimeout(() => {
-                this._skills.mystery = false;
-            }, 20_000);
-            break;
-        }
-    }
 }

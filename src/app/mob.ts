@@ -2,10 +2,13 @@ import Phaser from 'phaser-ce';
 import { IGame, IMob, IPosition } from './interfaces';
 
 export class Mob implements IMob {
-    die = false;
+    dead = false;
+    score = 100;
+    get target(): Phaser.Sprite {
+        return this._target;
+    }
     private _target: Phaser.Sprite;
     private _speed = 40;
-    private _score = 100;
     private _game: IGame;
 
     constructor(game: IGame, pos: IPosition) {
@@ -15,7 +18,7 @@ export class Mob implements IMob {
         this._target.name = 'mob';
 
         this._target.body.onCollide = new Phaser.Signal();
-        this._target.body.onCollide.add(this._mobCollide, this._target);
+        this._target.body.onCollide.add(this._collide, this._target);
 
         // Анимация которая будут рисоваться при каждом действии.
         this._target.animations.add('mobWalkLeft', [3, 4, 5]);
@@ -26,6 +29,19 @@ export class Mob implements IMob {
         this._target.animations.play('mobWalkLeft', 8, true);
         this._target.update = this._update;
         this._collide();
+    }
+
+    die() {
+        if (this.dead) {
+            return;
+        }
+        this.dead = true;
+        this._target.animations.play('mobDie', 10, false);
+        this.dead = true;
+        this._target.body.velocity.setTo(0, 0);
+        setTimeout(()=>{
+            this.destroy();
+        }, 1000);
     }
 
     public destroy(): void {
@@ -51,17 +67,8 @@ export class Mob implements IMob {
         this._target.body.velocity.setTo(0, -this._speed);
     };
 
-    private _mobCollide = (_mob, spr) => {
-        this._collide();
-        switch(spr.name) {
-        case 'bum0':
-            this._die();
-            break;
-        }
-    };
-
-    private _collide(): void {
-        if(this.die){
+    private _collide = (): void => {
+        if(this.dead){
             return;
         }
         if (Math.random() < 0.4) {
@@ -75,23 +82,8 @@ export class Mob implements IMob {
         }
     }
 
-    private _die() {
-        if (this.die) {
-            return;
-        }
-        this.die = true;
-        this._target.animations.play('mobDie', 10, false);
-        this.die = true;
-        this._target.body.velocity.setTo(0, 0);
-        // FIXME: Переместить в правильное место
-        this._game.score += this._score;
-        setTimeout(()=>{
-            this.destroy();
-        }, 1000);
-    }
-
     private _update = () => {
-        if(this.die){
+        if(this.dead){
             return;
         }
 

@@ -4,6 +4,7 @@ import { IBonus, IDoor, IGame, IMan, IMob } from './interfaces';
 import { Man } from './man';
 import { buildMainWalls, buildLevel } from './generateMap';
 import { Door } from './door';
+import { destroyWall, manDie, manGetBonus, manWalksThroughTheDoor, mobDie } from './collides';
 
 export class Game implements IGame {
 
@@ -130,17 +131,17 @@ export class Game implements IGame {
         this.engine.physics.arcade.collide(this.player.target, this.groups.walls);
         this.engine.physics.arcade.collide(this.player.target, this.groups.wallsBrocken);
         this.engine.physics.arcade.collide(this.player.target, this.groups.bombsGroup);
-        this.engine.physics.arcade.collide(this.player.target, this.groups.bumGroup);
-        this.engine.physics.arcade.collide(this.player.target, this.bonus.target);
-        this.engine.physics.arcade.collide(this.player.target, this.door.target);
-        this.engine.physics.arcade.collide(this.player.target, this.groups.mobGroup);
+        this.engine.physics.arcade.collide(this.player.target, this.groups.bumGroup, () => manDie(this));
+        this.engine.physics.arcade.collide(this.player.target, this.bonus.target, () => manGetBonus(this));
+        this.engine.physics.arcade.collide(this.player.target, this.door.target, () => manWalksThroughTheDoor(this));
+        this.engine.physics.arcade.collide(this.player.target, this.groups.mobGroup, () => manDie(this));
 
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.walls);
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.wallsBrocken);
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bombsGroup);
-        this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bumGroup);
+        this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bumGroup, (mob: Phaser.Sprite) => mobDie(this, mob));
 
-        this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.wallsBrocken);
+        this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.wallsBrocken, (bomb, wall) => destroyWall(this, wall));
         this.player.update();
     };
 
