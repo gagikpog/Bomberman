@@ -129,12 +129,18 @@ export class Game implements IGame {
 
     update = () => {
         this.engine.physics.arcade.collide(this.player.target, this.groups.walls);
-        this.engine.physics.arcade.collide(this.player.target, this.groups.wallsBrocken);
-        this.engine.physics.arcade.collide(this.player.target, this.groups.bombsGroup);
-        this.engine.physics.arcade.collide(this.player.target, this.groups.bumGroup, () => manDie(this));
+        if (!this.player.skills.wallPass) {
+            this.engine.physics.arcade.collide(this.player.target, this.groups.wallsBrocken);
+        }
+        if (!this.player.skills.bombPass) {
+            this.engine.physics.arcade.collide(this.player.target, this.groups.bombsGroup);
+        }
+        if (!this.player.skills.flamePass) {
+            this.engine.physics.arcade.collide(this.player.target, this.groups.bumGroup, () => manDie(this));
+        }
         this.engine.physics.arcade.collide(this.player.target, this.bonus.target, () => manGetBonus(this));
         this.engine.physics.arcade.collide(this.player.target, this.door.target, () => manWalksThroughTheDoor(this));
-        this.engine.physics.arcade.collide(this.player.target, this.groups.mobGroup, () => manDie(this));
+        this.engine.physics.arcade.collide(this.player.target, this.groups.mobGroup, (man, mob) => manDie(this, mob));
 
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.walls);
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.wallsBrocken);

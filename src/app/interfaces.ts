@@ -38,6 +38,16 @@ export interface IMob {
 export interface IMan {
     lives: number;
     readonly target: Phaser.Sprite;
+    skills: {
+        bombs: number;
+        flames: number;
+        speed: number;
+        wallPass: boolean;
+        detonator: boolean;
+        bombPass: boolean;
+        flamePass: boolean;
+        mystery: boolean;
+    };
     comeToLife(): void;
     die(): void;
     update(): void;

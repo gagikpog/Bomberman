@@ -17,8 +17,15 @@ export function manWalksThroughTheDoor(game: IGame): void {
     }
 }
 
-export function manDie(game: IGame) {
-    game.player.die();
+export function manDie(game: IGame, mobSprite?: Phaser.Sprite) {
+    if (mobSprite) {
+        const mob = game.mobs.find((item: IMob) => item.target === mobSprite);
+        if (mob && !mob.dead) {
+            game.player.die();
+        }
+    } else {
+        game.player.die();
+    }
 }
 
 export function mobDie(game: IGame, mobSprite: Phaser.Sprite): void {
