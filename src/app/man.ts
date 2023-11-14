@@ -1,6 +1,7 @@
 import Phaser from 'phaser-ce';
 import { IBonus, IGame, IMan } from './interfaces';
 import { BonusType } from './enums';
+import { runBombAnimation } from './bombAnimation';
 
 export class Man implements IMan {
 
@@ -210,28 +211,29 @@ export class Man implements IMan {
 
 
     private _blowUp() {
-        if (!this._dead && this._game.bombs[0]) {
-            const bum = this._game.engine.add.sprite(this._game.bombs[0].x - 16, this._game.bombs[0].y - 16, 'bum');
-            const bum1 = this._game.groups.bumGroup.create(this._game.bombs[0].x - 10, this._game.bombs[0].y + 2, 'bum1');
-            const bum2 = this._game.groups.bumGroup.create(this._game.bombs[0].x + 2, this._game.bombs[0].y - 10, 'bum2');
+        if (!this._dead && this._game.bombs.length) {
+            const bomb = this._game.bombs.shift();
 
-            bum.animations.add('bombBum', [0, 1, 2, 3, 2, 1, 0]);
-            bum.animations.play('bombBum', 10, false);
-            bum.name = 'bum';
+            runBombAnimation(this._game, bomb);
+
+            const size = this._game.player.skills.flames;
+            const blockSize = this._game.blockSize;
+            const offset = 4;
+            const bum1 = this._game.engine.add.tileSprite(bomb.x - size*blockSize + offset , bomb.y + offset, blockSize*(size*2 + 1) - offset*2, blockSize - offset*2, 'bum1');
+            const bum2 = this._game.engine.add.tileSprite(bomb.x + offset, bomb.y - size*blockSize + offset, blockSize - offset*2, blockSize*(size*2 + 1) - offset*2, 'bum1');
+
+            this._game.groups.bumGroup.add(bum1);
+            this._game.groups.bumGroup.add(bum2);
             bum1.name = 'bum0';
             bum2.name = 'bum0';
             bum1.body.immovable = true;
             bum2.body.immovable = true;
             this._game.engine.world.bringToTop(this._target);
-            this._game.engine.world.sendToBack(bum);
-
-            const bomb = this._game.bombs.shift();
             bomb.destroy();
             setTimeout(() => {
-                bum.destroy();
                 bum1.destroy();
                 bum2.destroy();
-            }, 700);
+            }, 500);
         }
     }
 
