@@ -89,6 +89,7 @@ export class Man implements IMan {
     // Оживает
     comeToLife() {
         this.dead = false;
+        this._target.body.velocity.setTo(0, 0);
         this._target.x = 16;
         this._target.y = 16;
         this._target.animations.play('manStop', 10, false);

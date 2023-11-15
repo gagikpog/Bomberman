@@ -133,9 +133,6 @@ export class Game implements IGame {
     };
 
     update = () => {
-        if (!this.isGame) {
-            return;
-        }
         this.engine.physics.arcade.collide(this.player.target, this.groups.walls);
         if (!this.player.skills.wallPass) {
             this.engine.physics.arcade.collide(this.player.target, this.groups.wallsBrocken);
