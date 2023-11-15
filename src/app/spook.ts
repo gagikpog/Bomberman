@@ -37,8 +37,8 @@ export function getSpookSpeed(type: Spooks): number {
         // Быстро
         return 60;
     case Spooks.Kandoria:
-        // Оч. быстро
-        return 70;
+        // Оч. медленно
+        return 30;
     }
 }
 
@@ -58,19 +58,19 @@ export function getSpookLeftAnimation(type: Spooks): number[] {
     case Spooks.Balloom:
         return [3, 4, 5];
     case Spooks.Oneal:
-        return [0, 1, 2];
+        return [0, 1, 2, 1];
     case Spooks.Doll:
-        return [];
+        return [3, 4, 5, 4];
     case Spooks.Minyo:
-        return [];
+        return [0, 1, 2, 3];
     case Spooks.Kandoria:
-        return [];
+        return [3, 4, 5, 4];
     case Spooks.Oyapi:
-        return [];
+        return [3, 4, 5, 4];
     case Spooks.Pass:
-        return [];
+        return [3, 4, 5, 4];
     case Spooks.Pontan:
-        return [];
+        return [0, 1, 2, 3];
     }
 }
 
@@ -79,19 +79,19 @@ export function getSpookRightAnimation(type: Spooks): number[] {
     case Spooks.Balloom:
         return [0, 1, 2];
     case Spooks.Oneal:
-        return [3, 4, 5];
+        return [3, 4, 5, 4];
     case Spooks.Doll:
-        return [];
+        return [0, 1, 2, 1];
     case Spooks.Minyo:
-        return [];
+        return [0, 1, 4, 3];
     case Spooks.Kandoria:
-        return [];
+        return [0, 1, 2, 1];
     case Spooks.Oyapi:
-        return [];
+        return [0, 1, 2, 1];
     case Spooks.Pass:
-        return [];
+        return [0, 1, 2, 1];
     case Spooks.Pontan:
-        return [];
+        return [0, 1, 4, 3];
     }
 }
 
@@ -100,19 +100,19 @@ export function getSpookDieAnimation(type: Spooks): number[] {
     case Spooks.Balloom:
         return [7, 8, 9, 10];
     case Spooks.Oneal:
-        return [6];
+        return [6, 7, 8, 9, 10];
     case Spooks.Doll:
-        return [];
+        return [6, 7, 8, 9, 10];
     case Spooks.Minyo:
-        return [];
+        return [5, 6, 7, 8];
     case Spooks.Kandoria:
-        return [];
+        return [6, 7, 8, 9, 10];
     case Spooks.Oyapi:
-        return [];
+        return [6, 7, 8, 9, 10];
     case Spooks.Pass:
-        return [];
+        return [6, 7, 8, 9, 10];
     case Spooks.Pontan:
-        return [];
+        return [5, 6, 7, 8];
     }
 }
 

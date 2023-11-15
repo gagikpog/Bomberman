@@ -85,13 +85,13 @@ export class Game implements IGame {
         this.engine.load.spritesheet('door', 'door.png', 16, 16, 14);
 
         this.engine.load.spritesheet(Spooks.Balloom, `${Spooks.Balloom}.png`, 16, 16, 11);
-        this.engine.load.spritesheet(Spooks.Oneal, `${Spooks.Oneal}.png`, 16, 16, 7);
-        this.engine.load.spritesheet(Spooks.Doll, `${Spooks.Doll}.png`, 16, 16, 7);
-        this.engine.load.spritesheet(Spooks.Minyo, `${Spooks.Minyo}.png`, 16, 16, 6);
-        this.engine.load.spritesheet(Spooks.Kandoria, `${Spooks.Kandoria}.png`, 16, 16, 7);
-        this.engine.load.spritesheet(Spooks.Oyapi, `${Spooks.Oyapi}.png`, 16, 16, 7);
-        this.engine.load.spritesheet(Spooks.Pass, `${Spooks.Pass}.png`, 16, 16, 7);
-        this.engine.load.spritesheet(Spooks.Pontan, `${Spooks.Pontan}.png`, 16, 16, 6);
+        this.engine.load.spritesheet(Spooks.Oneal, `${Spooks.Oneal}.png`, 16, 16, 11);
+        this.engine.load.spritesheet(Spooks.Doll, `${Spooks.Doll}.png`, 16, 16, 11);
+        this.engine.load.spritesheet(Spooks.Minyo, `${Spooks.Minyo}.png`, 16, 16, 10);
+        this.engine.load.spritesheet(Spooks.Kandoria, `${Spooks.Kandoria}.png`, 16, 16, 11);
+        this.engine.load.spritesheet(Spooks.Oyapi, `${Spooks.Oyapi}.png`, 16, 16, 11);
+        this.engine.load.spritesheet(Spooks.Pass, `${Spooks.Pass}.png`, 16, 16, 11);
+        this.engine.load.spritesheet(Spooks.Pontan, `${Spooks.Pontan}.png`, 16, 16, 10);
     };
 
     render = () => {
