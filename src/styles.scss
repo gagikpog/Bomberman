@@ -6,19 +6,48 @@
 body {
     text-align: center;
     height: 100vh;
-    background-color: #b0b0b0;
+    background-color: #3d3d3d;
 }
 
 canvas {
     margin: 0!important;
+    height: calc(208px * var(--zoom, 1))!important;
+    width: calc(496px * var(--zoom, 1))!important;
+}
+
+main {
+    overflow-y: auto;
+}
+
+main::-webkit-scrollbar {
+    display: none;
 }
 
 .flex {
     display: flex;
 }
 
+.flex-col {
+    flex-direction: column;
+}
+
+.flex-items-center {
+    align-items: center;
+}
+
+.flex-justify-center {
+    justify-content: center;
+}
+
 .flex-1 {
     flex: 1;
+}
+
+.content {
+    min-width: 0;
+    max-width: 800px;
+    background-color: #b0b0b0;
+    padding: 5px;
 }
 
 .header {

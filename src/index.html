@@ -3,19 +3,23 @@
 <head>
     <meta charset="UTF-8">
     <title>Bomberman</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=2">
     <link rel="shortcut icon" href="assets/favicon.png" type="image/png">
 </head>
-<body>
-    <div class="flex header" id="header">
-        <span>
-            TIME <span id="time"></span>
-        </span>
-        <span class="flex-1">
-            SCORE <span id="score"></span>
-        </span>
-        <span>
-            LEFT <span id="lives"></span>
-        </span>
+<body class="flex flex-justify-center flex-items-center">
+    <div class="content flex flex-col">
+        <header class="flex header" id="header">
+            <span>
+                TIME <span id="time"></span>
+            </span>
+            <span class="flex-1">
+                SCORE <span id="score"></span>
+            </span>
+            <span>
+                LEFT <span id="lives"></span>
+            </span>
+        </header>
+        <main id="root"></main>
     </div>
 </body>
 </html>

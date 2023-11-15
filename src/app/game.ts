@@ -32,29 +32,33 @@ export class Game implements IGame {
 
     private time = 180;
     private _prevTime = 0;
+    private _zoom = 3;
     private _rect = null;
     private _refs: {
         time: HTMLSpanElement;
         score: HTMLSpanElement;
         lives: HTMLSpanElement;
         header: HTMLDivElement;
+        root: HTMLDivElement;
     };
 
     constructor() {
+        this._refs = {
+            time: document.querySelector('#time'),
+            score: document.querySelector('#score'),
+            lives: document.querySelector('#lives'),
+            header: document.querySelector('#header'),
+            root: document.querySelector('#root')
+        };
 
-        this.engine = new Phaser.Game(this.gameWidth * this.blockSize, this.gameHeight * this.blockSize, Phaser.AUTO, null, {
+        this._refs.root.style.setProperty('--zoom', `${this._zoom}`);
+
+        this.engine = new Phaser.Game(this.gameWidth * this.blockSize, this.gameHeight * this.blockSize, Phaser.AUTO, this._refs.root, {
             preload: this.preload,
             create: this.create,
             update: this.update,
             render: this.render
         });
-
-        this._refs = {
-            time: document.querySelector('#time'),
-            score: document.querySelector('#score'),
-            lives: document.querySelector('#lives'),
-            header: document.querySelector('#header')
-        };
 
         this._rect = new Phaser.Rectangle(0, 0, 500, 500);
     }
@@ -66,7 +70,7 @@ export class Game implements IGame {
             this.engine.load.baseURL = './assets/';
             this.engine.load.crossOrigin = 'anonymous';
         }
-        this.engine.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        this.engine.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
         this.engine.scale.pageAlignHorizontally = true;
         this.engine.scale.pageAlignVertically = true;
         this.engine.load.spritesheet('man', 'man.png', 16, 16, 21);
@@ -210,15 +214,31 @@ export class Game implements IGame {
             this._refs.lives.innerText = `${this.player.lives}`;
         }
 
+        const containerWidth = this._refs.root.clientWidth;
+        const gameWidth = this.gameWidth * this.blockSize * this._zoom;
+
+        if (containerWidth < gameWidth) {
+            const playerPosition = this.player.target.x * this._zoom;
+            const maxScroll = gameWidth - containerWidth;
+            const newScroll = Math.max(0, Math.min(maxScroll, playerPosition - containerWidth / 2));
+            if (newScroll !== this._refs.root.scrollLeft) {
+                this._refs.root.scrollLeft = newScroll;
+            }
+        } else if (this._refs.root.scrollLeft !== 0) {
+            this._refs.root.scrollLeft = 0;
+        }
+
         if (this._refs.header.classList.contains('header-hidden')) {
             this._refs.header.classList.toggle('header-hidden');
         }
-
     }
 
     private _hideStatusBar(): void {
         if (!this._refs.header.classList.contains('header-hidden')) {
             this._refs.header.classList.toggle('header-hidden');
+            const gameWidth = this.gameWidth * this.blockSize * this._zoom;
+            const containerWidth = this._refs.root.clientWidth;
+            this._refs.root.scrollLeft = Math.max(0, (gameWidth - containerWidth) / 2);
         }
     }
 
