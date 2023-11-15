@@ -1,5 +1,7 @@
 import Phaser from 'phaser-ce';
 import { IGame, IMob, IPosition } from './interfaces';
+import { Spooks } from './enums';
+import { getSpookDieAnimation, getSpookLeftAnimation, getSpookRightAnimation, getSpookScore, getSpookSpeed } from './spook';
 
 export class Mob implements IMob {
     dead = false;
@@ -10,10 +12,14 @@ export class Mob implements IMob {
     private _target: Phaser.Sprite;
     private _speed = 40;
     private _game: IGame;
+    private _type: Spooks;
 
     constructor(game: IGame, pos: IPosition) {
         this._game = game;
-        this._target = game.groups.mobGroup.create(pos.x, pos.y, 'mob1');
+        this._type = Spooks.Balloom;
+        this._target = game.groups.mobGroup.create(pos.x, pos.y, this._type);
+        this.score = getSpookScore(this._type);
+        this._speed = getSpookSpeed(this._type);
 
         this._target.name = 'mob';
 
@@ -21,12 +27,10 @@ export class Mob implements IMob {
         this._target.body.onCollide.add(this._collide, this._target);
 
         // Анимация которая будут рисоваться при каждом действии.
-        this._target.animations.add('mobWalkLeft', [3, 4, 5]);
-        this._target.animations.add('mobWalkRight', [0, 1, 2]);
-        this._target.animations.add('mobDie', [7, 8, 9, 10]);
+        this._target.animations.add('mobWalkLeft', getSpookLeftAnimation(this._type));
+        this._target.animations.add('mobWalkRight', getSpookRightAnimation(this._type));
+        this._target.animations.add('mobDie', getSpookDieAnimation(this._type));
 
-        // Загрузка изначальной кортики.
-        this._target.animations.play('mobWalkLeft', 8, true);
         this._target.update = this._update;
         this._collide();
     }
@@ -80,7 +84,7 @@ export class Mob implements IMob {
         } else {
             this._goDown();
         }
-    }
+    };
 
     private _update = () => {
         if(this.dead){

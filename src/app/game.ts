@@ -5,6 +5,7 @@ import { buildMainWalls, buildLevel } from './generateMap';
 import { Door } from './door';
 import { destroyWall, manDie, manGetBonus, manWalksThroughTheDoor, mobDie } from './collides';
 import { detonateAnOldBomb, detonateBombInChain, plantBomb } from './bomb';
+import { Spooks } from './enums';
 
 export class Game implements IGame {
 
@@ -74,7 +75,6 @@ export class Game implements IGame {
         this.engine.scale.pageAlignHorizontally = true;
         this.engine.scale.pageAlignVertically = true;
         this.engine.load.spritesheet('man', 'man.png', 16, 16, 21);
-        this.engine.load.spritesheet('mob1', 'mob1.png', 16, 16, 11);
         this.engine.load.spritesheet('bomb', 'bomb.png', 16, 16, 3);
         this.engine.load.spritesheet('bum', 'bum.png', 16, 16, 36);
         this.engine.load.spritesheet('bum1', 'b1.png', 36, 12, 1);
@@ -83,6 +83,15 @@ export class Game implements IGame {
         this.engine.load.spritesheet('wallDestroy', 'wallDestroy.png', 16, 16, 7);
         this.engine.load.spritesheet('bonuses', 'bonuses.png', 16, 16, 14);
         this.engine.load.spritesheet('door', 'door.png', 16, 16, 14);
+
+        this.engine.load.spritesheet(Spooks.Balloom, `${Spooks.Balloom}.png`, 16, 16, 11);
+        this.engine.load.spritesheet(Spooks.Oneal, `${Spooks.Oneal}.png`, 16, 16, 7);
+        this.engine.load.spritesheet(Spooks.Doll, `${Spooks.Doll}.png`, 16, 16, 7);
+        this.engine.load.spritesheet(Spooks.Minyo, `${Spooks.Minyo}.png`, 16, 16, 6);
+        this.engine.load.spritesheet(Spooks.Kandoria, `${Spooks.Kandoria}.png`, 16, 16, 7);
+        this.engine.load.spritesheet(Spooks.Oyapi, `${Spooks.Oyapi}.png`, 16, 16, 7);
+        this.engine.load.spritesheet(Spooks.Pass, `${Spooks.Pass}.png`, 16, 16, 7);
+        this.engine.load.spritesheet(Spooks.Pontan, `${Spooks.Pontan}.png`, 16, 16, 6);
     };
 
     render = () => {

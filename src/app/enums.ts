@@ -16,3 +16,14 @@ export enum BonusType {
     /** Бессмертие */
     Mystery
 }
+
+export enum Spooks {
+    Balloom = 'balloom',
+    Oneal = 'oneal',
+    Doll = 'doll',
+    Minyo = 'minyo',
+    Kandoria = 'kandoria',
+    Oyapi = 'oyapi',
+    Pass = 'pass',
+    Pontan = 'pontan'
+}
