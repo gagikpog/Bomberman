@@ -1,12 +1,10 @@
 import Phaser from 'phaser-ce';
 import { IBonus, IGame, IMan } from './interfaces';
 import { BonusType } from './enums';
-import { getBombSize, runBombAnimation } from './bombAnimation';
-
 export class Man implements IMan {
 
     public lives = 3;
-
+    public dead = false;
     get target(): Phaser.Sprite {
         return this._target;
     }
@@ -35,7 +33,6 @@ export class Man implements IMan {
     private _game: IGame;
     private _target: Phaser.Sprite;
     private _keyboard;
-    private _dead = false;
 
     constructor(game: IGame) {
         this._game = game;
@@ -65,13 +62,13 @@ export class Man implements IMan {
 
     // Умирает
     die(): void {
-        if (this._dead || this.skills.mystery) {
+        if (this.dead || this.skills.mystery) {
             return;
         }
         this.lives--;
         this._target.body.velocity.setTo(0, 0);
         this._target.animations.play('manDie', 10, false);
-        this._dead = true;
+        this.dead = true;
 
         // Навыки которые теряются при смерти
         this.skills.wallPass = false;
@@ -91,14 +88,14 @@ export class Man implements IMan {
 
     // Оживает
     comeToLife() {
-        this._dead = false;
+        this.dead = false;
         this._target.x = 16;
         this._target.y = 16;
         this._target.animations.play('manStop', 10, false);
     }
 
     update() {
-        if (this._dead) {
+        if (this.dead) {
             return;
         }
         if (this._keyboard.leftKey.isDown) {
@@ -111,42 +108,6 @@ export class Man implements IMan {
             this._goDown();
         } else {
             this._stop();
-        }
-    }
-
-    dropBomb() {
-        if (this._game.bombs.length < this.skills.bombs && !this._dead) {
-            const x = this._target.x + 8;
-            const y = this._target.y + 8;
-
-            const posX = x - x % 16;
-            const posY = y - y % 16;
-            let i = 0;
-            for (i = 0;i < this._game.bombs.length; i++) {
-                if (this._game.bombs[i].x === posX && this._game.bombs[i].y === posY) {
-                    return;
-                }
-            }
-            const bomb = this._game.groups.bombsGroup.create(posX, posY, 'bomb');
-
-            bomb.name = 'bomb';
-            bomb.animations.add('bombLife', [1, 0, 2, 0]);
-            bomb.animations.play('bombLife', 5, true);
-            bomb.body.immovable = true;
-
-            this._game.bombs.push(bomb);
-            this._game.engine.world.bringToTop(this._target);
-            if (!this.skills.detonator) {
-                setTimeout(() => {
-                    this._blowUp();
-                }, 2000);
-            }
-        }
-    }
-
-    blowUp() {
-        if (this.skills.detonator) {
-            this._blowUp();
         }
     }
 
@@ -206,33 +167,6 @@ export class Man implements IMan {
     private _stop() {
         this._target.body.velocity.setTo(0, 0);
         this._target.animations.play('manStop', 10, false);
-    }
-
-
-    private _blowUp() {
-        if (!this._dead && this._game.bombs.length) {
-            const bomb = this._game.bombs.shift();
-            const bombSize = getBombSize(this._game, bomb);
-            runBombAnimation(this._game, bomb, bombSize);
-
-            const blockSize = this._game.blockSize;
-            const offset = 4;
-            const bum1 = this._game.engine.add.tileSprite(bomb.x - bombSize.left*blockSize + offset , bomb.y + offset, blockSize*(bombSize.left + bombSize.right + 1) - offset*2, blockSize - offset*2, 'bum1');
-            const bum2 = this._game.engine.add.tileSprite(bomb.x + offset, bomb.y - bombSize.top*blockSize + offset, blockSize - offset*2, blockSize*(bombSize.top + bombSize.bottom + 1) - offset*2, 'bum1');
-
-            this._game.groups.bumGroup.add(bum1);
-            this._game.groups.bumGroup.add(bum2);
-            bum1.name = 'bum0';
-            bum2.name = 'bum0';
-            bum1.body.immovable = true;
-            bum2.body.immovable = true;
-            this._game.engine.world.bringToTop(this._target);
-            bomb.destroy();
-            setTimeout(() => {
-                bum1.destroy();
-                bum2.destroy();
-            }, 500);
-        }
     }
 
     private _initSprites(): void {

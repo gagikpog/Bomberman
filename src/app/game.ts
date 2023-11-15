@@ -1,10 +1,10 @@
 import Phaser from 'phaser-ce';
-import { bindKeyboard } from './functions';
 import { IBonus, IDoor, IGame, IMan, IMob } from './interfaces';
 import { Man } from './man';
 import { buildMainWalls, buildLevel } from './generateMap';
 import { Door } from './door';
 import { destroyWall, manDie, manGetBonus, manWalksThroughTheDoor, mobDie } from './collides';
+import { detonateAnOldBomb, detonateBombInChain, plantBomb } from './bomb';
 
 export class Game implements IGame {
 
@@ -98,9 +98,11 @@ export class Game implements IGame {
 
     create = () => {
         setInterval(() => {
-            if (this.time-- === 0) {
-                this.player.die();
-                this.time = 180;
+            if (this.isGame) {
+                if (this.time-- === 0) {
+                    this.player.die();
+                    this.time = 180;
+                }
             }
         }, 1000);
 
@@ -127,6 +129,9 @@ export class Game implements IGame {
     };
 
     update = () => {
+        if (!this.isGame) {
+            return;
+        }
         this.engine.physics.arcade.collide(this.player.target, this.groups.walls);
         if (!this.player.skills.wallPass) {
             this.engine.physics.arcade.collide(this.player.target, this.groups.wallsBrocken);
@@ -146,7 +151,8 @@ export class Game implements IGame {
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bombsGroup);
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bumGroup, (mob: Phaser.Sprite) => mobDie(this, mob));
 
-        this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.wallsBrocken, (bomb, wall) => destroyWall(this, wall));
+        this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.wallsBrocken, (bum, wall) => destroyWall(this, wall));
+        this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.bombsGroup, (bum, bomb) => detonateBombInChain(this, bomb));
         this.player.update();
     };
 
@@ -183,7 +189,7 @@ export class Game implements IGame {
         this.score = 0;
         this.stage = 1;
         this.nextLevel();
-        bindKeyboard(this);
+        this._bindKeyboard();
     }
 
     winLevel() {
@@ -214,6 +220,20 @@ export class Game implements IGame {
         if (!this._refs.header.classList.contains('header-hidden')) {
             this._refs.header.classList.toggle('header-hidden');
         }
+    }
+
+    private _bindKeyboard(): void {
+        this.engine.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(() => {
+            plantBomb(this);
+        });
+        this.engine.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR).onDown.add(() => {
+            plantBomb(this);
+        });
+        this.engine.input.keyboard.addKey(Phaser.Keyboard.X).onDown.add(() => {
+            if (this.player.skills.detonator) {
+                detonateAnOldBomb(this);
+            }
+        });
     }
 
 }

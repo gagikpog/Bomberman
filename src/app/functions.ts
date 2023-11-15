@@ -7,18 +7,6 @@ export function buildBlock(game: IGame, pos: IPosition): IWall {
     return block;
 }
 
-export function bindKeyboard(game: IGame): void {
-    game.engine.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(() => {
-        game.player.dropBomb();
-    });
-    game.engine.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR).onDown.add(() => {
-        game.player.dropBomb();
-    });
-    game.engine.input.keyboard.addKey(Phaser.Keyboard.X).onDown.add(() => {
-        game.player.blowUp();
-    });
-}
-
 function isOuterWall(x: number, y: number, gameWidth: number, gameHeight: number): boolean {
     return x === 0 || y === 0 || x === gameWidth - 1 || y === gameHeight - 1;
 };

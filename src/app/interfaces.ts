@@ -37,6 +37,7 @@ export interface IMob {
 
 export interface IMan {
     lives: number;
+    dead: boolean;
     readonly target: Phaser.Sprite;
     skills: {
         bombs: number;
@@ -51,8 +52,6 @@ export interface IMan {
     comeToLife(): void;
     die(): void;
     update(): void;
-    dropBomb(): void;
-    blowUp(): void;
     destroy(): void;
     applyBonus(bonus: IBonus): void;
 }
