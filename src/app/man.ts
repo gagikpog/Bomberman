@@ -1,7 +1,7 @@
 import Phaser from 'phaser-ce';
 import { IBonus, IGame, IMan } from './interfaces';
 import { BonusType } from './enums';
-import { runBombAnimation } from './bombAnimation';
+import { getBombSize, runBombAnimation } from './bombAnimation';
 
 export class Man implements IMan {
 
@@ -15,7 +15,6 @@ export class Man implements IMan {
     skills = {
         // Количество бомб который может поставить
         bombs: 1,
-        // TODO: Не сделано
         // Радиус взрыва
         flames: 1,
         // Скорость
@@ -213,14 +212,13 @@ export class Man implements IMan {
     private _blowUp() {
         if (!this._dead && this._game.bombs.length) {
             const bomb = this._game.bombs.shift();
+            const bombSize = getBombSize(this._game, bomb);
+            runBombAnimation(this._game, bomb, bombSize);
 
-            runBombAnimation(this._game, bomb);
-
-            const size = this._game.player.skills.flames;
             const blockSize = this._game.blockSize;
             const offset = 4;
-            const bum1 = this._game.engine.add.tileSprite(bomb.x - size*blockSize + offset , bomb.y + offset, blockSize*(size*2 + 1) - offset*2, blockSize - offset*2, 'bum1');
-            const bum2 = this._game.engine.add.tileSprite(bomb.x + offset, bomb.y - size*blockSize + offset, blockSize - offset*2, blockSize*(size*2 + 1) - offset*2, 'bum1');
+            const bum1 = this._game.engine.add.tileSprite(bomb.x - bombSize.left*blockSize + offset , bomb.y + offset, blockSize*(bombSize.left + bombSize.right + 1) - offset*2, blockSize - offset*2, 'bum1');
+            const bum2 = this._game.engine.add.tileSprite(bomb.x + offset, bomb.y - bombSize.top*blockSize + offset, blockSize - offset*2, blockSize*(bombSize.top + bombSize.bottom + 1) - offset*2, 'bum1');
 
             this._game.groups.bumGroup.add(bum1);
             this._game.groups.bumGroup.add(bum2);

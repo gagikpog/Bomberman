@@ -18,3 +18,17 @@ export function bindKeyboard(game: IGame): void {
         game.player.blowUp();
     });
 }
+
+function isOuterWall(x: number, y: number, gameWidth: number, gameHeight: number): boolean {
+    return x === 0 || y === 0 || x === gameWidth - 1 || y === gameHeight - 1;
+};
+
+function isGridWall(x: number, y: number): boolean {
+    return x % 2 === 0 && y % 2 === 0;
+};
+
+export function isMainWall(x: number, y: number, gameWidth: number, gameHeight: number) {
+    return isOuterWall(x, y, gameWidth, gameHeight) || isGridWall(x, y);
+}
+
+export const getKey = (x: number, y: number): string => `${x}-${y}`;

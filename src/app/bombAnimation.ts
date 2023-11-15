@@ -1,5 +1,13 @@
 import { Sprite } from 'phaser-ce';
 import { IGame, IPosition } from './interfaces';
+import { getKey, isMainWall } from './functions';
+
+interface IBombSize {
+    left: number;
+    top: number;
+    right: number;
+    bottom: number;
+}
 
 function getAnimation(game: IGame, name: string, pos: IPosition): Sprite {
     const animationTime = 10;
@@ -68,13 +76,12 @@ function getBottom(game: IGame, bomb: Sprite, count: number): Sprite[] {
     });
 }
 
-export function runBombAnimation(game: IGame, bomb: Sprite): void {
-    const size = game.player.skills.flames;
+export function runBombAnimation(game: IGame, bomb: Sprite, size: IBombSize): void {
     const sprites: Sprite[] = [
-        ...getLeft(game, bomb, size),
-        ...getTop(game, bomb, size),
-        ...getRight(game, bomb, size),
-        ...getBottom(game, bomb, size),
+        ...getLeft(game, bomb, size.left),
+        ...getTop(game, bomb, size.top),
+        ...getRight(game, bomb, size.right),
+        ...getBottom(game, bomb, size.bottom),
         getAnimation(game, 'center', {x: bomb.x, y: bomb.y})
     ];
 
@@ -85,4 +92,39 @@ export function runBombAnimation(game: IGame, bomb: Sprite): void {
     setTimeout(() => {
         sprites.forEach((sprite) => sprite.destroy());
     }, 700);
+}
+
+function calcSize(size: number, isWallCallback: (s: number) => boolean): number {
+    let count = 1;
+
+    for (count = 1; count < size; count++) {
+        if (isWallCallback(count)) {
+            break;
+        }
+    }
+    return count;
+}
+
+export function getBombSize(game: IGame, bomb: Sprite): IBombSize {
+    const size = game.player.skills.flames;
+    const map = game.blocks.reduce((res, block) => {
+        if (block.body) {
+            const key = getKey(block.x / game.blockSize, block.y / game.blockSize);
+            res.set(key, true);
+        }
+        return res;
+    }, new Map());
+
+    const bombX = bomb.x / game.blockSize;
+    const bombY = bomb.y / game.blockSize;
+    const isWall = (x: number, y: number) => {
+        return isMainWall(x, y, game.gameWidth, game.gameHeight) || map.get(getKey(x, y));
+    };
+
+    const left = calcSize(size, (count) => isWall(bombX - count, bombY));
+    const top = calcSize(size, (count) => isWall(bombX, bombY - count));
+    const right = calcSize(size, (count) => isWall(bombX + count, bombY));
+    const bottom = calcSize(size, (count) => isWall(bombX, bombY + count));
+
+    return { left, top, right, bottom };
 }

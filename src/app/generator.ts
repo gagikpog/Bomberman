@@ -1,18 +1,10 @@
+import { getKey, isMainWall } from './functions';
 import { IPosition } from './interfaces';
 
 export function * mainWallIndexGenerator(width: number, height: number): Generator<IPosition> {
-
-    const isMainWall = (i, j) => {
-        return i === 0 || j === 0 || i === width - 1 || j === height - 1;
-    };
-
-    const isGridWall = (i, j) => {
-        return i % 2 === 0 && j % 2 === 0;
-    };
-
     for (let i = 0; i < width; i++) {
         for (let j = 0; j < height; j++) {
-            if (isMainWall(i, j) || isGridWall(i, j)) {
+            if (isMainWall(i, j, width, height)) {
                 yield {x: i, y: j };
             }
         }
@@ -21,7 +13,6 @@ export function * mainWallIndexGenerator(width: number, height: number): Generat
 
 export function * getRandomFreePosition(width: number, height: number): Generator<IPosition> {
     const map = new Map();
-    const getKey = (x: number, y: number): string => `${x}-${y}`;
 
     // Ячейки по стены, они уже заняты
     const it = mainWallIndexGenerator(width, height);
