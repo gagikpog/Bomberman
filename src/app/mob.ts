@@ -13,8 +13,8 @@ export class Mob implements IMob {
     private _speed = 40;
     private _type: Spooks;
 
-    constructor(game: IGame, pos: IPosition) {
-        this._type = Spooks.Balloom;
+    constructor(game: IGame, pos: IPosition, spookType: Spooks) {
+        this._type = spookType;
         this.score = getSpookScore(this._type);
         this._speed = getSpookSpeed(this._type);
         const wallPass = getSpookWallPass(this._type);

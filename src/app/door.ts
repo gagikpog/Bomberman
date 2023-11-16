@@ -13,7 +13,6 @@ export class Door implements IDoor {
         this._target = game.engine.add.sprite(0, 0, 'door');
         this._target.name = 'door';
         game.engine.physics.arcade.enable(this._target);
-        this._target.body.setCircle(1);
         this._target.body.immovable = true;
         game.engine.world.sendToBack(this._target);
     }

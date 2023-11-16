@@ -3,7 +3,15 @@ import { IBonus, IDoor, IGame, IMan, IMob } from './interfaces';
 import { Man } from './man';
 import { buildMainWalls, buildLevel } from './generateMap';
 import { Door } from './door';
-import { destroyWall, manDie, manGetBonus, manWalksThroughTheDoor, mobDie } from './collides';
+import {
+    checkCustomCollide,
+    destroyWall,
+    freeTheSpooks,
+    manDie,
+    manGetBonus,
+    manWalksThroughTheDoor,
+    mobDie
+} from './collides';
 import { detonateAnOldBomb, detonateBombInChain, plantBomb } from './bomb';
 import { Spooks } from './enums';
 
@@ -36,6 +44,7 @@ export class Game implements IGame {
     private _prevTime = 0;
     private _zoom = 3;
     private _rect = null;
+    private _canFreeSpooks = true;
     private _refs: {
         time: HTMLSpanElement;
         score: HTMLSpanElement;
@@ -157,8 +166,7 @@ export class Game implements IGame {
         if (!this.player.skills.flamePass) {
             this.engine.physics.arcade.collide(this.player.target, this.groups.bumGroup, () => manDie(this));
         }
-        this.engine.physics.arcade.collide(this.player.target, this.bonus.target, () => manGetBonus(this));
-        this.engine.physics.arcade.collide(this.player.target, this.door.target, () => manWalksThroughTheDoor(this));
+
         this.engine.physics.arcade.collide(this.player.target, this.groups.mobGroup, (man, mob) => manDie(this, mob));
         this.engine.physics.arcade.collide(this.player.target, this.groups.mobWallCollideGroup, (man, mob) => manDie(this, mob));
 
@@ -169,6 +177,16 @@ export class Game implements IGame {
 
         this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.wallsBrocken, (bum, wall) => destroyWall(this, wall));
         this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.bombsGroup, (bum, bomb) => detonateBombInChain(this, bomb));
+        this.engine.physics.arcade.collide(this.groups.bumGroup, this.door.target, (bomb) => freeTheSpooks(this, bomb, 'door'));
+        this.engine.physics.arcade.collide(this.groups.bumGroup, this.bonus.target, (bonus) => freeTheSpooks(this, bonus, 'bonus'));
+
+        if (checkCustomCollide(this.player.target, this.bonus.target)) {
+            manGetBonus(this);
+        }
+        if (checkCustomCollide(this.player.target, this.door.target)) {
+            manWalksThroughTheDoor(this);
+        }
+
         this.player.update();
     };
 
@@ -216,6 +234,21 @@ export class Game implements IGame {
             this.isGame = true;
         }, 3000);
         this.nextLevel();
+    }
+
+    canFreeSpooks(type: string): boolean {
+        if (!this._canFreeSpooks) {
+            return false;
+        }
+        const canFree = type === 'door' ? this.door.opened() : this.bonus.canDestroy();
+        if (canFree) {
+            this._canFreeSpooks = false;
+            setTimeout(() => {
+                this._canFreeSpooks = true;
+            }, 500);
+            return true;
+        }
+        return false;
     }
 
     private _updateStatusBar(): void {

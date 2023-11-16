@@ -1,4 +1,5 @@
 import { Bonus } from './bonus';
+import { Spooks } from './enums';
 import { buildBlock } from './functions';
 import { getRandomFreePosition, mainWallIndexGenerator } from './generator';
 import { IGame, IPosition } from './interfaces';
@@ -45,8 +46,12 @@ function buildDoor(game: IGame, random: Generator<IPosition>) {
 function buildMobs(game: IGame, random: Generator<IPosition>, count: number) {
     for (let i = 0; i < count; i++) {
         const pos = multiplePosition(random.next().value, game.blockSize);
-        game.mobs.push(new Mob(game, pos));
+        buildMob(game, pos, Spooks.Balloom);
     }
+}
+
+export function buildMob(game: IGame, pos: IPosition, spookType: Spooks) {
+    game.mobs.push(new Mob(game, pos, spookType));
 }
 
 function buildWalls(game: IGame, random: Generator<IPosition>, count: number) {

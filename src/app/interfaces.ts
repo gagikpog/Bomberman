@@ -26,6 +26,7 @@ export interface IGame {
     newGame(): void;
     nextLevel(): void;
     winLevel(): void;
+    canFreeSpooks(type: string): boolean;
 }
 
 export interface IMob {
