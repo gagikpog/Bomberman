@@ -26,6 +26,7 @@ export class Game implements IGame {
     public groups = {
         walls: null,
         mobGroup: null,
+        mobWallCollideGroup: null,
         bombsGroup: null,
         bumGroup: null,
         wallsBrocken: null
@@ -132,8 +133,12 @@ export class Game implements IGame {
         this.groups.bumGroup = this.engine.add.group();
         this.groups.bumGroup.enableBody = true;
 
+        this.groups.mobWallCollideGroup = this.engine.add.group();
+        this.groups.mobWallCollideGroup.enableBody = true;
+
         this.groups.mobGroup = this.engine.add.group();
         this.groups.mobGroup.enableBody = true;
+        this.groups.mobGroup.add(this.groups.mobWallCollideGroup);
 
         this.door = new Door(this);
 
@@ -155,11 +160,12 @@ export class Game implements IGame {
         this.engine.physics.arcade.collide(this.player.target, this.bonus.target, () => manGetBonus(this));
         this.engine.physics.arcade.collide(this.player.target, this.door.target, () => manWalksThroughTheDoor(this));
         this.engine.physics.arcade.collide(this.player.target, this.groups.mobGroup, (man, mob) => manDie(this, mob));
+        this.engine.physics.arcade.collide(this.player.target, this.groups.mobWallCollideGroup, (man, mob) => manDie(this, mob));
 
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.walls);
-        this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.wallsBrocken);
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bombsGroup);
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bumGroup, (mob: Phaser.Sprite) => mobDie(this, mob));
+        this.engine.physics.arcade.collide(this.groups.mobWallCollideGroup, this.groups.wallsBrocken);
 
         this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.wallsBrocken, (bum, wall) => destroyWall(this, wall));
         this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.bombsGroup, (bum, bomb) => detonateBombInChain(this, bomb));

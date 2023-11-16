@@ -18,6 +18,7 @@ export interface IGame {
     groups: {
         walls: Phaser.Group;
         mobGroup: Phaser.Group;
+        mobWallCollideGroup: Phaser.Group;
         bombsGroup: Phaser.Group;
         bumGroup: Phaser.Group;
         wallsBrocken: Phaser.Group;

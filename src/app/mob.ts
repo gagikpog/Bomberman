@@ -1,7 +1,7 @@
 import Phaser from 'phaser-ce';
 import { IGame, IMob, IPosition } from './interfaces';
 import { Spooks } from './enums';
-import { getSpookDieAnimation, getSpookLeftAnimation, getSpookRightAnimation, getSpookScore, getSpookSpeed } from './spook';
+import { getSpookDieAnimation, getSpookLeftAnimation, getSpookRightAnimation, getSpookScore, getSpookSpeed, getSpookWallPass } from './spook';
 
 export class Mob implements IMob {
     dead = false;
@@ -11,15 +11,18 @@ export class Mob implements IMob {
     }
     private _target: Phaser.Sprite;
     private _speed = 40;
-    private _game: IGame;
     private _type: Spooks;
 
     constructor(game: IGame, pos: IPosition) {
-        this._game = game;
         this._type = Spooks.Balloom;
-        this._target = game.groups.mobGroup.create(pos.x, pos.y, this._type);
         this.score = getSpookScore(this._type);
         this._speed = getSpookSpeed(this._type);
+        const wallPass = getSpookWallPass(this._type);
+        this._target = game.engine.add.sprite(pos.x, pos.y, this._type);
+        game.groups.mobGroup.add(this._target);
+        if (!wallPass) {
+            game.groups.mobWallCollideGroup.add(this._target);
+        }
 
         this._target.name = 'mob';
 
@@ -48,7 +51,7 @@ export class Mob implements IMob {
         }, 1000);
     }
 
-    public destroy(): void {
+    destroy(): void {
         this._target.destroy();
     }
 
