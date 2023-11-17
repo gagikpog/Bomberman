@@ -4,6 +4,7 @@ import { buildBlock } from './functions';
 import { getRandomFreePosition, mainWallIndexGenerator } from './generator';
 import { IGame, IPosition } from './interfaces';
 import { Mob } from './mob';
+import { getSpooksByLevel } from './spook';
 
 export function buildLevel(game: IGame) {
     const random = getRandomFreePosition(game.gameWidth, game.gameHeight);
@@ -44,10 +45,11 @@ function buildDoor(game: IGame, random: Generator<IPosition>) {
 }
 
 function buildMobs(game: IGame, random: Generator<IPosition>, count: number) {
-    for (let i = 0; i < count; i++) {
+    const spooks = getSpooksByLevel(game.stage);
+    spooks.forEach((type) => {
         const pos = multiplePosition(random.next().value, game.blockSize);
-        buildMob(game, pos, Spooks.Balloom);
-    }
+        buildMob(game, pos, type);
+    });
 }
 
 export function buildMob(game: IGame, pos: IPosition, spookType: Spooks) {

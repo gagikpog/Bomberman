@@ -21,9 +21,9 @@ export enum Spooks {
     Balloom = 'balloom',
     Oneal = 'oneal',
     Doll = 'doll',
-    Minyo = 'minyo',
-    Kandoria = 'kandoria',
-    Oyapi = 'oyapi',
+    Minvo = 'minvo',
+    Kondoria = 'kondoria',
+    Ovapi = 'ovapi',
     Pass = 'pass',
     Pontan = 'pontan'
 }
