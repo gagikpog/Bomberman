@@ -59,17 +59,69 @@ export class Bonus implements IBonus {
     }
 
     private _getTypeByLevel(level: number): BonusType {
-        const bonuses = [
-            BonusType.Mystery,
-            BonusType.Flames,
-            BonusType.Bombs,
-            BonusType.Speed,
-            BonusType.WallPass,
-            BonusType.Detonator,
-            BonusType.BombPass,
-            BonusType.FlamePass
-        ];
-
-        return bonuses[level % bonuses.length] || BonusType.Flames;
+        return bonuses[(level - 1) % bonuses.length] || BonusType.Flames;
     }
 }
+
+const bonuses = [
+    // 1-5
+    BonusType.Flames,
+    BonusType.Bombs,
+    BonusType.Detonator,
+    BonusType.Speed,
+    BonusType.Bombs,
+    // 6-10
+    BonusType.Bombs,
+    BonusType.Flames,
+    BonusType.Detonator,
+    BonusType.BombPass,
+    BonusType.WallPass,
+    // 11-15
+    BonusType.Bombs,
+    BonusType.Bombs,
+    BonusType.Detonator,
+    BonusType.BombPass,
+    BonusType.Flames,
+    // 16-20
+    BonusType.WallPass,
+    BonusType.Bombs,
+    BonusType.BombPass,
+    BonusType.Bombs,
+    BonusType.Detonator,
+    // 21-25
+    BonusType.BombPass,
+    BonusType.Detonator,
+    BonusType.Bombs,
+    BonusType.Detonator,
+    BonusType.BombPass,
+    // 26-30
+    BonusType.Mystery,
+    BonusType.Flames,
+    BonusType.Bombs,
+    BonusType.Detonator,
+    BonusType.FlamePass,
+    // 31-35
+    BonusType.WallPass,
+    BonusType.Bombs,
+    BonusType.Detonator,
+    BonusType.Mystery,
+    BonusType.BombPass,
+    // 36-40
+    BonusType.FlamePass,
+    BonusType.Detonator,
+    BonusType.Flames,
+    BonusType.WallPass,
+    BonusType.Mystery,
+    // 41-45
+    BonusType.Detonator,
+    BonusType.WallPass,
+    BonusType.BombPass,
+    BonusType.Detonator,
+    BonusType.Mystery,
+    // 46-50
+    BonusType.WallPass,
+    BonusType.BombPass,
+    BonusType.Detonator,
+    BonusType.FlamePass,
+    BonusType.Mystery
+];

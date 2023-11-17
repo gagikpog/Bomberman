@@ -1,20 +1,20 @@
 export enum BonusType {
     /** Добавляет +1 запас бомб */
-    Bombs,
+    Bombs = 'bombs',
     /** Добавляет +1 ячейку в радиус взрыва */
-    Flames,
+    Flames = 'flames',
     /** Увеличивает скорость игрока */
-    Speed,
+    Speed = 'speed',
     /** Способность прохождение сквозь кирпичные стены */
-    WallPass,
+    WallPass = 'wallPass',
     /** Способность самому взрывать бомбу */
-    Detonator,
+    Detonator = 'detonator',
     /** Способность прохождение сквозь бомбу */
-    BombPass,
+    BombPass = 'bombPass',
     /** Способность не получать уран от бомбы */
-    FlamePass,
+    FlamePass = 'flamePass',
     /** Бессмертие */
-    Mystery
+    Mystery = 'mystery'
 }
 
 export enum Spooks {

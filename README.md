@@ -14,3 +14,5 @@ npm run dev
 ```bash
 npm run build
 ```
+
+[Rules](https://strategywiki.org/wiki/Bomberman/How_to_play)
