@@ -7,7 +7,7 @@
     <link rel="shortcut icon" href="assets/favicon.png" type="image/png">
 </head>
 <body class="flex flex-justify-center flex-items-center">
-    <div class="content flex flex-col">
+    <div class="content flex flex-col" id="container">
         <header class="flex header">
             <span>
                 TIME <span id="time"></span>
@@ -24,6 +24,15 @@
         <div class="stage-overlay" id="stageOverlay" style="display: none;">
             <span id="stageText"></span>
         </div>
+        <div class="bonuses flex" id="bonusList">
+        </div>
+
+        <template id="bonusTemplate">
+            <div class="flex flex-items-center">
+                <img class="bonuses-image" src="assets/bonuses.png" alt="" srcset="">
+                <div class="bonuses-text"></div>
+            </div>
+        </template>
     </div>
 </body>
 </html>

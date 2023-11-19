@@ -46,13 +46,17 @@ export class Game implements IGame {
     private _zoom = 3;
     private _canFreeSpooks = true;
     private _timerId;
+    private _bonusKey: string;
     private _refs: {
         time: HTMLSpanElement;
         score: HTMLSpanElement;
         lives: HTMLSpanElement;
         root: HTMLDivElement;
+        container: HTMLDivElement;
         stageOverlay: HTMLDivElement;
         stageText: HTMLSpanElement;
+        bonusList: HTMLDivElement;
+        bonusTemplate: HTMLTemplateElement;
     };
 
     constructor() {
@@ -61,11 +65,14 @@ export class Game implements IGame {
             score: document.querySelector('#score'),
             lives: document.querySelector('#lives'),
             root: document.querySelector('#root'),
+            container: document.querySelector('#container'),
             stageOverlay: document.querySelector('#stageOverlay'),
-            stageText: document.querySelector('#stageText')
+            stageText: document.querySelector('#stageText'),
+            bonusList: document.querySelector('#bonusList'),
+            bonusTemplate: document.querySelector('#bonusTemplate')
         };
 
-        this._refs.root.style.setProperty('--zoom', `${this._zoom}`);
+        this._refs.container.style.setProperty('--zoom', `${this._zoom}`);
 
         this.engine = new Phaser.Game(this.gameWidth * this.blockSize, this.gameHeight * this.blockSize, Phaser.AUTO, this._refs.root, {
             preload: this.preload,
@@ -275,7 +282,7 @@ export class Game implements IGame {
         this.mobs.forEach(destroy);
         this.bombs.forEach(destroy);
 
-        this.time = this.stage.isBonusStage ? 5 : 180;
+        this.time = this.stage.isBonusStage ? 30 : 180;
         this.blocks = [];
         this.mobs = [];
         this.bombs = [];
@@ -289,6 +296,7 @@ export class Game implements IGame {
             this._refs.time.innerText = `${this.time}`;
             this._refs.score.innerText = `${this.score}`;
             this._refs.lives.innerText = `${this.player.lives}`;
+            this._updateBonuses();
         }
 
         const containerWidth = this._refs.root.clientWidth;
@@ -318,6 +326,50 @@ export class Game implements IGame {
                 detonateAnOldBomb(this);
             }
         });
+    }
+
+    private _updateBonuses() {
+
+        const bonusKey = [
+            this.player.skills.bombs,
+            this.player.skills.flames,
+            this.player.skills.wallPass,
+            this.player.skills.detonator,
+            this.player.skills.bombPass,
+            this.player.skills.flamePass,
+            this.player.skills.mystery
+        ].join();
+
+        if (bonusKey !== this._bonusKey) {
+            this._bonusKey = bonusKey;
+            this._refs.bonusList.innerHTML = '';
+            this._addBonus('0', `${this.player.skills.bombs}`);
+            this._addBonus('1', `${this.player.skills.flames}`);
+            if (this.player.skills.wallPass) {
+                this._addBonus('3', '');
+            }
+            if (this.player.skills.detonator) {
+                this._addBonus('4', '');
+            }
+            if (this.player.skills.bombPass) {
+                this._addBonus('5', '');
+            }
+            if (this.player.skills.flamePass) {
+                this._addBonus('6', '');
+            }
+            if (this.player.skills.mystery) {
+                this._addBonus('7', '');
+            }
+        }
+    }
+
+    private _addBonus(id: string, text: string): void {
+        const template = this._refs.bonusTemplate.content.cloneNode(true);
+        // @ts-ignore
+        template.firstElementChild.style.setProperty('--bonus-offset', id);
+        // @ts-ignore
+        template.querySelector('.bonuses-text').textContent = text;
+        this._refs.bonusList.appendChild(template);
     }
 
 }
