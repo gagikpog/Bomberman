@@ -15,4 +15,6 @@ npm run dev
 npm run build
 ```
 
+[Play online](https://bomberman.gagikpog.ru/)
+
 [Rules](https://strategywiki.org/wiki/Bomberman/How_to_play)
