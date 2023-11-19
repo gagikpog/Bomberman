@@ -1,4 +1,4 @@
-export enum BonusType {
+export enum PowerUpType {
     /** Добавляет +1 запас бомб */
     Bombs = 'bombs',
     /** Добавляет +1 ячейку в радиус взрыва */

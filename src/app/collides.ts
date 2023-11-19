@@ -4,15 +4,15 @@ import { buildMob } from './generateMap';
 import { Spooks } from './enums';
 
 export function manGetBonus(game: IGame): void {
-    if (game.bonus.canDestroy()) {
-        game.player.applyBonus(game.bonus);
-        game.score += game.bonus.score;
-        game.bonus.destroy();
+    if (game.powerUp.canDestroy()) {
+        game.player.applyBonus(game.powerUp);
+        game.score += game.powerUp.score;
+        game.powerUp.destroy();
     }
 }
 
 export function manWalksThroughTheDoor(game: IGame): void {
-    if (game.bonus.destroyed && game.door.opened()) {
+    if (game.powerUp.destroyed && game.door.opened()) {
         const allMobsAreDead = game.mobs.every((mob) => mob.dead);
         if (allMobsAreDead) {
             game.winLevel();
@@ -23,11 +23,13 @@ export function manWalksThroughTheDoor(game: IGame): void {
 export function manDie(game: IGame, mobSprite?: Phaser.Sprite) {
     if (mobSprite) {
         const mob = game.mobs.find((item: IMob) => item.target === mobSprite);
-        if (mob && !mob.dead) {
-            game.player.die();
+        if (mob && !mob.dead && !game.player.dead) {
+            game.losingLevel();
         }
     } else {
-        game.player.die();
+        if (!game.player.dead) {
+            game.losingLevel();
+        }
     }
 }
 
@@ -60,7 +62,7 @@ export function destroyWall(game: IGame, wall: IWall): void {
 export function freeTheSpooks(game: IGame, target: Sprite, type): void {
     if (game.canFreeSpooks(type)) {
         setTimeout(() => {
-            for (let i = 0; i < game.mobsCount; i++) {
+            for (let i = 0; i < game.maxSpookCount; i++) {
                 buildMob(game, {x: target.x, y: target.y}, Spooks.Pontan);
             }
         }, 500);

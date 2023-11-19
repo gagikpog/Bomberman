@@ -1,5 +1,5 @@
 import Phaser from 'phaser-ce';
-import { IBonus, IDoor, IGame, IMan, IMob } from './interfaces';
+import { IPowerUp, IDoor, IGame, IMan, IMob, IStageConfig } from './interfaces';
 import { Man } from './man';
 import { buildMainWalls, buildLevel } from './generateMap';
 import { Door } from './door';
@@ -14,23 +14,23 @@ import {
 } from './collides';
 import { detonateAnOldBomb, detonateBombInChain, plantBomb } from './bomb';
 import { Spooks } from './enums';
+import { getStageData } from './levels';
 
 export class Game implements IGame {
 
-    public mobsCount = 6;
-    public bonus: IBonus = null;
+    public maxSpookCount = 10;
+    public powerUp: IPowerUp = null;
     public door: IDoor = null;
     public player: IMan = null;
     public engine: Phaser.Game = null;
     public bombs: Phaser.Sprite[] = [];
     public mobs: IMob[] = [];
     public blocks: Phaser.Sprite[] = [];
-    public isGame = true;
     public score = 0;
     public gameWidth = 31;
     public gameHeight = 13;
     public blockSize = 16;
-    public stage = 1;
+    public stage: IStageConfig;
     public groups = {
         walls: null,
         mobGroup: null,
@@ -41,16 +41,18 @@ export class Game implements IGame {
     };
 
     private time = 180;
+    private _level = 0;
     private _prevTime = 0;
     private _zoom = 3;
-    private _rect = null;
     private _canFreeSpooks = true;
+    private _timerId;
     private _refs: {
         time: HTMLSpanElement;
         score: HTMLSpanElement;
         lives: HTMLSpanElement;
-        header: HTMLDivElement;
         root: HTMLDivElement;
+        stageOverlay: HTMLDivElement;
+        stageText: HTMLSpanElement;
     };
 
     constructor() {
@@ -58,8 +60,9 @@ export class Game implements IGame {
             time: document.querySelector('#time'),
             score: document.querySelector('#score'),
             lives: document.querySelector('#lives'),
-            header: document.querySelector('#header'),
-            root: document.querySelector('#root')
+            root: document.querySelector('#root'),
+            stageOverlay: document.querySelector('#stageOverlay'),
+            stageText: document.querySelector('#stageText')
         };
 
         this._refs.root.style.setProperty('--zoom', `${this._zoom}`);
@@ -70,8 +73,6 @@ export class Game implements IGame {
             update: this.update,
             render: this.render
         });
-
-        this._rect = new Phaser.Rectangle(0, 0, 500, 500);
     }
 
     preload = () => {
@@ -105,30 +106,10 @@ export class Game implements IGame {
     };
 
     render = () => {
-        if (this.isGame) {
-            this._updateStatusBar();
-            this.engine.debug.text('', 60, 20);
-        } else {
-            this._hideStatusBar();
-            this.engine.debug.geom(this._rect, 'rgba(0, 0, 0, 1)');
-            this.engine.debug.text(
-                `STAGE ${this.stage}`,
-                this.gameWidth * this.blockSize / 2 - 30,
-                this.gameHeight * this.blockSize / 2 - 20
-            );
-        }
+        this._updateStatusBar();
     };
 
     create = () => {
-        setInterval(() => {
-            if (this.isGame) {
-                if (this.time-- === 0) {
-                    this.player.die();
-                    this.time = 180;
-                }
-            }
-        }, 1000);
-
         this.engine.physics.startSystem(Phaser.Physics.ARCADE);
         this.groups.walls = this.engine.add.group();
         this.groups.walls.enableBody = true;
@@ -160,15 +141,22 @@ export class Game implements IGame {
         if (!this.player.skills.wallPass) {
             this.engine.physics.arcade.collide(this.player.target, this.groups.wallsBrocken);
         }
-        if (!this.player.skills.bombPass) {
+
+        if (!this.player.skills.bombPass && !this.stage.isBonusStage) {
             this.engine.physics.arcade.collide(this.player.target, this.groups.bombsGroup);
         }
-        if (!this.player.skills.flamePass) {
+
+        if (!this.player.skills.flamePass && !this.stage.isBonusStage) {
             this.engine.physics.arcade.collide(this.player.target, this.groups.bumGroup, () => manDie(this));
         }
 
-        this.engine.physics.arcade.collide(this.player.target, this.groups.mobGroup, (man, mob) => manDie(this, mob));
-        this.engine.physics.arcade.collide(this.player.target, this.groups.mobWallCollideGroup, (man, mob) => manDie(this, mob));
+        if (!this.stage.isBonusStage) {
+            this.engine.physics.arcade.collide(this.player.target, this.groups.mobGroup, (man, mob) => manDie(this, mob));
+        }
+
+        if (!this.stage.isBonusStage) {
+            this.engine.physics.arcade.collide(this.player.target, this.groups.mobWallCollideGroup, (man, mob) => manDie(this, mob));
+        }
 
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.walls);
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bombsGroup);
@@ -177,39 +165,22 @@ export class Game implements IGame {
 
         this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.wallsBrocken, (bum, wall) => destroyWall(this, wall));
         this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.bombsGroup, (bum, bomb) => detonateBombInChain(this, bomb));
-        this.engine.physics.arcade.collide(this.groups.bumGroup, this.door.target, (bomb) => freeTheSpooks(this, bomb, 'door'));
-        this.engine.physics.arcade.collide(this.groups.bumGroup, this.bonus.target, (bonus) => freeTheSpooks(this, bonus, 'bonus'));
 
-        if (checkCustomCollide(this.player.target, this.bonus.target)) {
-            manGetBonus(this);
+        if (!this.stage.isBonusStage) {
+            this.engine.physics.arcade.collide(this.groups.bumGroup, this.door.target, (bomb) => freeTheSpooks(this, bomb, 'door'));
+            this.engine.physics.arcade.collide(this.groups.bumGroup, this.powerUp.target, (bonus) => freeTheSpooks(this, bonus, 'bonus'));
+            if (checkCustomCollide(this.player.target, this.powerUp.target)) {
+                manGetBonus(this);
+            }
+
+            if (checkCustomCollide(this.player.target, this.door.target)) {
+                manWalksThroughTheDoor(this);
+            }
         }
-        if (checkCustomCollide(this.player.target, this.door.target)) {
-            manWalksThroughTheDoor(this);
-        }
+
 
         this.player.update();
     };
-
-    nextLevel() {
-        if (this.player.lives === 0) {
-            alert('Game over');
-            this.newGame();
-            return;
-        }
-
-        this.bonus?.destroy();
-        const destroy = (item) => item.destroy();
-        this.blocks.forEach(destroy);
-        this.mobs.forEach(destroy);
-        this.bombs.forEach(destroy);
-
-        this.time = 180;
-        this.blocks = [];
-        this.mobs = [];
-        this.bombs = [];
-        buildLevel(this);
-        this.player.comeToLife();
-    }
 
     newGame() {
         if (this.player) {
@@ -221,26 +192,28 @@ export class Game implements IGame {
         this.engine.world.bringToTop(this.groups.walls);
 
         this.score = 0;
-        this.stage = 1;
-        this.nextLevel();
+        this._level = 0;
+        this._nextLevel();
+        this._runTimer();
         this._bindKeyboard();
     }
 
     winLevel() {
-        this.stage++;
+        this._level++;
         this.player.lives++;
-        this.isGame = false;
-        setTimeout(() => {
-            this.isGame = true;
-        }, 3000);
-        this.nextLevel();
+        this._nextStageWithAnimation(0);
+    }
+
+    losingLevel() {
+        this.player.die();
+        this._nextStageWithAnimation();
     }
 
     canFreeSpooks(type: string): boolean {
         if (!this._canFreeSpooks) {
             return false;
         }
-        const canFree = type === 'door' ? this.door.opened() : this.bonus.canDestroy();
+        const canFree = type === 'door' ? this.door.opened() : this.powerUp.canDestroy();
         if (canFree) {
             this._canFreeSpooks = false;
             setTimeout(() => {
@@ -249,6 +222,65 @@ export class Game implements IGame {
             return true;
         }
         return false;
+    }
+
+    private _runTimer() {
+        this._stopTimer();
+
+        this._timerId = setInterval(() => {
+            this.time--;
+            if (this.time === 0) {
+                if (this.stage.isBonusStage) {
+                    this.winLevel();
+                } else {
+                    this.losingLevel();
+                }
+            }
+        }, 1000);
+    }
+
+    private _stopTimer() {
+        if (this._timerId) {
+            clearInterval(this._timerId);
+            this._timerId = 0;
+        }
+    }
+
+    private _nextStageWithAnimation(timeout= 3000) {
+        this._stopTimer();
+        setTimeout(() => {
+            this._nextLevel();
+            this.engine.paused = true;
+            this._refs.stageOverlay.style.display = '';
+            this._refs.stageText.textContent = this.stage.name;
+            setTimeout(()=>{
+                this._runTimer();
+                this.engine.paused = false;
+                this._refs.stageOverlay.style.display = 'none';
+            }, 3000);
+        }, timeout);
+    }
+
+    private _nextLevel() {
+        if (this.player.lives === 0) {
+            alert('Game over');
+            this.newGame();
+            return;
+        }
+
+        this.stage = getStageData(this._level);
+        this.powerUp?.destroy();
+        const destroy = (item) => item.destroy();
+        this.blocks.forEach(destroy);
+        this.mobs.forEach(destroy);
+        this.bombs.forEach(destroy);
+
+        this.time = this.stage.isBonusStage ? 5 : 180;
+        this.blocks = [];
+        this.mobs = [];
+        this.bombs = [];
+        buildLevel(this);
+        this.player.comeToLife();
     }
 
     private _updateStatusBar(): void {
@@ -271,19 +303,6 @@ export class Game implements IGame {
             }
         } else if (this._refs.root.scrollLeft !== 0) {
             this._refs.root.scrollLeft = 0;
-        }
-
-        if (this._refs.header.classList.contains('header-hidden')) {
-            this._refs.header.classList.toggle('header-hidden');
-        }
-    }
-
-    private _hideStatusBar(): void {
-        if (!this._refs.header.classList.contains('header-hidden')) {
-            this._refs.header.classList.toggle('header-hidden');
-            const gameWidth = this.gameWidth * this.blockSize * this._zoom;
-            const containerWidth = this._refs.root.clientWidth;
-            this._refs.root.scrollLeft = Math.max(0, (gameWidth - containerWidth) / 2);
         }
     }
 

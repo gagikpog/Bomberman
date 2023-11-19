@@ -1,20 +1,19 @@
-import { BonusType } from './enums';
+import { PowerUpType, Spooks } from './enums';
 
 export interface IGame {
     engine: Phaser.Game;
-    mobsCount: number;
+    maxSpookCount: number;
     mobs: IMob[];
     blocks: IWall[];
     bombs: Phaser.Sprite[];
-    bonus: IBonus;
+    powerUp: IPowerUp;
     door: IDoor;
     player: IMan;
-    isGame: boolean;
     score: number;
     gameWidth: number;
     gameHeight: number;
     blockSize: number;
-    stage: number;
+    stage: IStageConfig;
     groups: {
         walls: Phaser.Group;
         mobGroup: Phaser.Group;
@@ -24,8 +23,8 @@ export interface IGame {
         wallsBrocken: Phaser.Group;
     };
     newGame(): void;
-    nextLevel(): void;
     winLevel(): void;
+    losingLevel(): void;
     canFreeSpooks(type: string): boolean;
 }
 
@@ -55,12 +54,12 @@ export interface IMan {
     die(): void;
     update(): void;
     destroy(): void;
-    applyBonus(bonus: IBonus): void;
+    applyBonus(bonus: IPowerUp): void;
 }
 
-export interface IBonus {
+export interface IPowerUp {
     score: number;
-    type: BonusType;
+    type: PowerUpType;
     destroyed: boolean;
     readonly target: Phaser.Sprite;
     destroy(): void;
@@ -81,4 +80,21 @@ export type IWall = Phaser.Sprite;
 export interface IPosition {
     x: number;
     y: number;
+}
+
+export interface IStageConfig {
+    id: string;
+    name: string;
+    isBonusStage: boolean;
+    powerUp: PowerUpType;
+    spooks: Partial<{
+        [Spooks.Balloom]: number;
+        [Spooks.Doll]: number;
+        [Spooks.Kondoria]: number;
+        [Spooks.Minvo]: number;
+        [Spooks.Oneal]: number;
+        [Spooks.Ovapi]: number;
+        [Spooks.Pass]: number;
+        [Spooks.Pontan]: number;
+    }>;
 }

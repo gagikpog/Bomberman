@@ -8,7 +8,7 @@
 </head>
 <body class="flex flex-justify-center flex-items-center">
     <div class="content flex flex-col">
-        <header class="flex header" id="header">
+        <header class="flex header">
             <span>
                 TIME <span id="time"></span>
             </span>
@@ -19,7 +19,11 @@
                 LEFT <span id="lives"></span>
             </span>
         </header>
-        <main id="root"></main>
+        <main id="root">
+        </main>
+        <div class="stage-overlay" id="stageOverlay" style="display: none;">
+            <span id="stageText"></span>
+        </div>
     </div>
 </body>
 </html>

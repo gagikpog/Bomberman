@@ -1,6 +1,6 @@
 import Phaser from 'phaser-ce';
-import { IBonus, IGame, IMan } from './interfaces';
-import { BonusType } from './enums';
+import { IPowerUp, IGame, IMan } from './interfaces';
+import { PowerUpType } from './enums';
 export class Man implements IMan {
 
     public lives = 3;
@@ -31,6 +31,7 @@ export class Man implements IMan {
 
     private name;
     private _game: IGame;
+    private _mysteryTimeout = 20_000;
     private _target: Phaser.Sprite;
     private _keyboard;
 
@@ -76,14 +77,6 @@ export class Man implements IMan {
         this.skills.bombPass = false;
         this.skills.flamePass = false;
         this.skills.mystery = false;
-
-        setTimeout(() => {
-            this._game.isGame = false;
-            setTimeout(()=>{
-                this._game.nextLevel();
-                this._game.isGame = true;
-            }, 3000);
-        }, 3000);
     }
 
     // Оживает
@@ -112,34 +105,34 @@ export class Man implements IMan {
         }
     }
 
-    applyBonus(bonus: IBonus): void {
+    applyBonus(bonus: IPowerUp): void {
         switch (bonus.type) {
-        case BonusType.Bombs:
+        case PowerUpType.Bombs:
             this.skills.bombs++;
             break;
-        case BonusType.Flames:
+        case PowerUpType.Flames:
             this.skills.flames++;
             break;
-        case BonusType.Speed:
+        case PowerUpType.Speed:
             this.skills.speed += 10;
             break;
-        case BonusType.WallPass:
+        case PowerUpType.WallPass:
             this.skills.wallPass = true;
             break;
-        case BonusType.Detonator:
+        case PowerUpType.Detonator:
             this.skills.detonator = true;
             break;
-        case BonusType.BombPass:
+        case PowerUpType.BombPass:
             this.skills.bombPass = true;
             break;
-        case BonusType.FlamePass:
+        case PowerUpType.FlamePass:
             this.skills.flamePass = true;
             break;
-        case BonusType.Mystery:
+        case PowerUpType.Mystery:
             this.skills.mystery = true;
             setTimeout(() => {
                 this.skills.mystery = false;
-            }, 20_000);
+            }, this._mysteryTimeout);
             break;
         }
     }
