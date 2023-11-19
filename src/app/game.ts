@@ -98,7 +98,7 @@ export class Game implements IGame {
         this.engine.load.spritesheet(Spooks.Balloom, `${Spooks.Balloom}.png`, 16, 16, 11);
         this.engine.load.spritesheet(Spooks.Oneal, `${Spooks.Oneal}.png`, 16, 16, 11);
         this.engine.load.spritesheet(Spooks.Doll, `${Spooks.Doll}.png`, 16, 16, 11);
-        this.engine.load.spritesheet(Spooks.Minvo, `${Spooks.Minvo}.png`, 16, 16, 10);
+        this.engine.load.spritesheet(Spooks.Minvo, `${Spooks.Minvo}.png`, 16, 16, 11);
         this.engine.load.spritesheet(Spooks.Kondoria, `${Spooks.Kondoria}.png`, 16, 16, 11);
         this.engine.load.spritesheet(Spooks.Ovapi, `${Spooks.Ovapi}.png`, 16, 16, 11);
         this.engine.load.spritesheet(Spooks.Pass, `${Spooks.Pass}.png`, 16, 16, 11);
