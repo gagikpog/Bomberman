@@ -11,6 +11,8 @@ export function buildLevel(game: IGame) {
         buildBonus(game, random);
         buildDoor(game, random);
         buildWalls(game, random, 53);
+    } else {
+        game.door.target.visible = false;
     }
     buildMobs(game, random);
 }
@@ -43,6 +45,7 @@ function buildDoor(game: IGame, random: Generator<IPosition>) {
     game.blocks.push(block);
     game.door.setPosition(pos);
     game.door.setBlock(block);
+    game.door.target.visible = true;
 }
 
 function buildMobs(game: IGame, random: Generator<IPosition>) {
