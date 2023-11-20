@@ -59,11 +59,14 @@ export function destroyWall(game: IGame, wall: IWall): void {
     }
 }
 
-export function freeTheSpooks(game: IGame, target: Sprite, type): void {
+export function freeTheSpooks(game: IGame, target: Sprite, type: string): void {
     if (game.canFreeSpooks(type)) {
         setTimeout(() => {
             for (let i = 0; i < game.maxSpookCount; i++) {
                 buildMob(game, {x: target.x, y: target.y}, Spooks.Pontan);
+            }
+            if (type === 'bonus') {
+                game.powerUp.destroy();
             }
         }, 500);
     }
