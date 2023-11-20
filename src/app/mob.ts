@@ -1,4 +1,4 @@
-import Phaser from 'phaser-ce';
+import { Sprite, Signal } from 'phaser-ce';
 import { IGame, IMob, IPosition } from './interfaces';
 import { Spooks } from './enums';
 import { getSpookDieAnimation, getSpookLeftAnimation, getSpookRightAnimation, getSpookScore, getSpookSpeed, getSpookWallPass } from './spook';
@@ -6,10 +6,10 @@ import { getSpookDieAnimation, getSpookLeftAnimation, getSpookRightAnimation, ge
 export class Mob implements IMob {
     dead = false;
     score = 100;
-    get target(): Phaser.Sprite {
+    get target(): Sprite {
         return this._target;
     }
-    private _target: Phaser.Sprite;
+    private _target: Sprite;
     private _speed = 40;
     private _type: Spooks;
 
@@ -26,7 +26,7 @@ export class Mob implements IMob {
 
         this._target.name = 'mob';
 
-        this._target.body.onCollide = new Phaser.Signal();
+        this._target.body.onCollide = new Signal();
         this._target.body.onCollide.add(this._collide, this._target);
 
         // Анимация которая будут рисоваться при каждом действии.

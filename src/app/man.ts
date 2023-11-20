@@ -1,11 +1,11 @@
-import Phaser from 'phaser-ce';
+import { Sprite, Keyboard } from 'phaser-ce';
 import { IPowerUp, IGame, IMan } from './interfaces';
 import { PowerUpType } from './enums';
 export class Man implements IMan {
 
     public lives = 3;
     public dead = false;
-    get target(): Phaser.Sprite {
+    get target(): Sprite {
         return this._target;
     }
 
@@ -32,7 +32,7 @@ export class Man implements IMan {
     private name;
     private _game: IGame;
     private _mysteryTimeout = 20_000;
-    private _target: Phaser.Sprite;
+    private _target: Sprite;
     private _keyboard;
 
     constructor(game: IGame) {
@@ -49,10 +49,10 @@ export class Man implements IMan {
 
         // Подписка на события мыши.
         this._keyboard = {
-            leftKey: this._game.engine.input.keyboard.addKey(Phaser.Keyboard.LEFT),
-            rightKey: this._game.engine.input.keyboard.addKey(Phaser.Keyboard.RIGHT),
-            upKey: this._game.engine.input.keyboard.addKey(Phaser.Keyboard.UP),
-            downKey: this._game.engine.input.keyboard.addKey(Phaser.Keyboard.DOWN)
+            leftKey: this._game.engine.input.keyboard.addKey(Keyboard.LEFT),
+            rightKey: this._game.engine.input.keyboard.addKey(Keyboard.RIGHT),
+            upKey: this._game.engine.input.keyboard.addKey(Keyboard.UP),
+            downKey: this._game.engine.input.keyboard.addKey(Keyboard.DOWN)
         };
     }
 

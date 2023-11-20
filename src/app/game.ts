@@ -1,4 +1,4 @@
-import Phaser from 'phaser-ce';
+import { Sprite, AUTO as PhaserAUTO, ScaleManager, Game as PhaserGame, Keyboard, Physics } from 'phaser-ce';
 import { IPowerUp, IDoor, IGame, IMan, IMob, IStageConfig } from './interfaces';
 import { Man } from './man';
 import { buildMainWalls, buildLevel } from './generateMap';
@@ -22,10 +22,10 @@ export class Game implements IGame {
     public powerUp: IPowerUp = null;
     public door: IDoor = null;
     public player: IMan = null;
-    public engine: Phaser.Game = null;
-    public bombs: Phaser.Sprite[] = [];
+    public engine: PhaserGame = null;
+    public bombs: Sprite[] = [];
     public mobs: IMob[] = [];
-    public blocks: Phaser.Sprite[] = [];
+    public blocks: Sprite[] = [];
     public score = 0;
     public gameWidth = 31;
     public gameHeight = 13;
@@ -74,7 +74,7 @@ export class Game implements IGame {
 
         this._refs.container.style.setProperty('--zoom', `${this._zoom}`);
 
-        this.engine = new Phaser.Game(this.gameWidth * this.blockSize, this.gameHeight * this.blockSize, Phaser.AUTO, this._refs.root, {
+        this.engine = new PhaserGame(this.gameWidth * this.blockSize, this.gameHeight * this.blockSize, PhaserAUTO, this._refs.root, {
             preload: this.preload,
             create: this.create,
             update: this.update,
@@ -89,7 +89,7 @@ export class Game implements IGame {
             this.engine.load.baseURL = './assets/';
             this.engine.load.crossOrigin = 'anonymous';
         }
-        this.engine.scale.scaleMode = Phaser.ScaleManager.NO_SCALE;
+        this.engine.scale.scaleMode = ScaleManager.NO_SCALE;
         this.engine.scale.pageAlignHorizontally = true;
         this.engine.scale.pageAlignVertically = true;
         this.engine.load.spritesheet('man', 'man.png', 16, 16, 21);
@@ -117,7 +117,7 @@ export class Game implements IGame {
     };
 
     create = () => {
-        this.engine.physics.startSystem(Phaser.Physics.ARCADE);
+        this.engine.physics.startSystem(Physics.ARCADE);
         this.groups.walls = this.engine.add.group();
         this.groups.walls.enableBody = true;
 
@@ -164,7 +164,7 @@ export class Game implements IGame {
 
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.walls);
         this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bombsGroup);
-        this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bumGroup, (mob: Phaser.Sprite) => mobDie(this, mob));
+        this.engine.physics.arcade.collide(this.groups.mobGroup, this.groups.bumGroup, (mob: Sprite) => mobDie(this, mob));
         this.engine.physics.arcade.collide(this.groups.mobWallCollideGroup, this.groups.wallsBrocken);
 
         this.engine.physics.arcade.collide(this.groups.bumGroup, this.groups.wallsBrocken, (bum, wall) => destroyWall(this, wall));
@@ -312,13 +312,13 @@ export class Game implements IGame {
     }
 
     private _bindKeyboard(): void {
-        this.engine.input.keyboard.addKey(Phaser.Keyboard.C).onDown.add(() => {
+        this.engine.input.keyboard.addKey(Keyboard.C).onDown.add(() => {
             plantBomb(this);
         });
-        this.engine.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR).onDown.add(() => {
+        this.engine.input.keyboard.addKey(Keyboard.SPACEBAR).onDown.add(() => {
             plantBomb(this);
         });
-        this.engine.input.keyboard.addKey(Phaser.Keyboard.X).onDown.add(() => {
+        this.engine.input.keyboard.addKey(Keyboard.X).onDown.add(() => {
             if (this.player.skills.detonator) {
                 detonateBombInChain(this, this.bombs[0]);
             }
