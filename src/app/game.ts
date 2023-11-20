@@ -12,7 +12,7 @@ import {
     manWalksThroughTheDoor,
     mobDie
 } from './collides';
-import { detonateAnOldBomb, detonateBombInChain, plantBomb } from './bomb';
+import { detonateBombInChain, plantBomb } from './bomb';
 import { Spooks } from './enums';
 import { getStageData } from './levels';
 
@@ -323,7 +323,7 @@ export class Game implements IGame {
         });
         this.engine.input.keyboard.addKey(Phaser.Keyboard.X).onDown.add(() => {
             if (this.player.skills.detonator) {
-                detonateAnOldBomb(this);
+                detonateBombInChain(this, this.bombs[0]);
             }
         });
     }

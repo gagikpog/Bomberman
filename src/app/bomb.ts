@@ -3,18 +3,11 @@ import { getBombSize, runBombAnimation } from './bombAnimation';
 import { IGame } from './interfaces';
 
 export function detonateBombInChain(game: IGame, bomb: Sprite): void {
-    if (bomb.body) {
+    if (bomb?.body) {
         game.bombs = game.bombs.filter((b: Sprite) => b !== bomb);
         setTimeout(() => {
             detonateBomb(game, bomb);
         }, 100);
-    }
-}
-
-export function detonateAnOldBomb(game: IGame): void {
-    if (!game.player.dead && game.bombs.length) {
-        const bomb = game.bombs.shift();
-        detonateBomb(game, bomb);
     }
 }
 
@@ -65,7 +58,7 @@ export function plantBomb(game: IGame): void {
         game.engine.world.bringToTop(game.player.target);
         if (!game.player.skills.detonator) {
             setTimeout(() => {
-                detonateAnOldBomb(game);
+                detonateBombInChain(game, bomb);
             }, 2000);
         }
     }
