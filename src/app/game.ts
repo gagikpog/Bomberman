@@ -153,15 +153,12 @@ export class Game implements IGame {
             this.engine.physics.arcade.collide(this.player.target, this.groups.bombsGroup);
         }
 
-        if (!this.player.skills.flamePass && !this.stage.isBonusStage) {
+        if (!this.player.skills.flamePass && !this.player.skills.mystery && !this.stage.isBonusStage) {
             this.engine.physics.arcade.collide(this.player.target, this.groups.bumGroup, () => manDie(this));
         }
 
-        if (!this.stage.isBonusStage) {
+        if (!this.player.skills.mystery && !this.stage.isBonusStage) {
             this.engine.physics.arcade.collide(this.player.target, this.groups.mobGroup, (man, mob) => manDie(this, mob));
-        }
-
-        if (!this.stage.isBonusStage) {
             this.engine.physics.arcade.collide(this.player.target, this.groups.mobWallCollideGroup, (man, mob) => manDie(this, mob));
         }
 
