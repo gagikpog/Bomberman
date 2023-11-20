@@ -70,39 +70,58 @@ export class Mob implements IMob {
         this._target.body.velocity.setTo(0, this._speed);
     };
 
-    private _goUp = function() {
+    private _goUp() {
         this._target.body.velocity.setTo(0, -this._speed);
     };
 
     private _collide = (): void => {
-        if(this.dead){
-            return;
-        }
-        if (Math.random() < 0.4) {
-            this._goLeft();
-        } else if (Math.random() < 0.4) {
-            this._goRight();
-        } else if (Math.random() < 0.4) {
-            this._goUp();
-        } else {
-            this._goDown();
-        }
+        this._changeDirection();
     };
 
     private _update = () => {
-        if(this.dead){
-            return;
+        if (Math.random() < 0.1) {
+            this._changeDirection();
         }
 
-        const probability = 0.001;
-        if (Math.random() < probability) {
-            this._goLeft();
-        } else if (Math.random() < probability) {
-            this._goRight();
-        } else if (Math.random() < probability) {
-            this._goUp();
-        } else if (Math.random() < probability) {
-            this._goDown();
+        if (this._target.body.velocity.x === 0) {
+            this._target.x = this._round(this._target.x);
+        }
+
+        if (this._target.body.velocity.y === 0) {
+            this._target.y = this._round(this._target.y);
         }
     };
+
+    private _changeDirection() {
+        if (this._canChangeDirection() && !this.dead) {
+            const val = Math.random();
+            if (val < 0.25) {
+                this._goUp();
+            } else if (val < 0.5) {
+                this._goRight();
+            } else if (val < 0.75) {
+                this._goLeft();
+            } else {
+                this._goDown();
+            }
+        }
+    }
+
+    private _canChangeDirection(): boolean {
+        const size = 16;
+        const eps = 2;
+        const deltaX = this.target.x % size;
+        const deltaY = this.target.y % size;
+        return (deltaX < eps || deltaX > size - eps) && (deltaY < eps || deltaY > size - eps);
+    }
+
+    private _round(num: number): number {
+        const n = Math.round(num);
+        const diff = n % 16;
+        if (diff >= 8) {
+            return n - diff + 16;
+        } else {
+            return n - diff;
+        }
+    }
 }
