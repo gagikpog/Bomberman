@@ -12,6 +12,11 @@ export function detonateBombInChain(game: IGame, bomb: Sprite): void {
 }
 
 export function detonateBomb(game: IGame, bomb: Sprite): void {
+
+    if (!bomb.body) {
+        return;
+    }
+
     const bombSize = getBombSize(game, bomb);
     runBombAnimation(game, bomb, bombSize);
 
