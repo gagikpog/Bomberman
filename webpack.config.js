@@ -44,6 +44,10 @@ module.exports = {
                     from: 'src/assets/**/*',
                     to: 'assets/[name][ext]',
                 },
+                {
+                    from: 'src/public/*',
+                    to: '[name][ext]',
+                },
             ],
         }),
     ],
